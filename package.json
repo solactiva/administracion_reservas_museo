@@ -10,14 +10,22 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "bootstrap": "^5.3.3",
-    "popper.js": "^1.16.1",
+    "@formkit/tempo": "^0.1.2",
+    "@primevue/themes": "^4.0.7",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.0.7",
+    "tailwindcss-primeui": "^0.3.4",
     "vue": "^3.4.29"
   },
   "devDependencies": {
+    "@primevue/auto-import-resolver": "^4.0.7",
     "@vitejs/plugin-vue": "^5.0.5",
+    "autoprefixer": "^10.4.20",
     "eslint": "^8.57.0",
     "eslint-plugin-vue": "^9.23.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "unplugin-vue-components": "^0.27.4",
     "vite": "^5.3.1"
   }
 }
