@@ -1,9 +1,37 @@
 <template>
 	<div class="container mx-auto px-4">
-		<DataTable :value="reservas" tableStyle="min-width: 50rem">
+		<DataTable :value="skeletons" v-if="fetching">
 			<template #header>
 				<div class="flex flex-wrap items-center justify-between gap-2">
-					<span class="text-xl font-bold">RESERVAS PARA CONFIRMAR</span>
+					<div></div>
+					<Button icon="pi pi-refresh" @click="fetchReservas" rounded raised />
+				</div>
+			</template>
+			<Column field="code" header="Fecha Registro">
+				<template #body>
+					<Skeleton></Skeleton>
+				</template>
+			</Column>
+			<Column field="name" header="Nombre">
+				<template #body>
+					<Skeleton></Skeleton>
+				</template>
+			</Column>
+			<Column field="category" header="Día de reserva">
+				<template #body>
+					<Skeleton></Skeleton>
+				</template>
+			</Column>
+			<Column field="quantity" header="Personas">
+				<template #body>
+					<Skeleton></Skeleton>
+				</template>
+			</Column>
+		</DataTable>
+		<DataTable :value="reservas" v-else>
+			<template #header>
+				<div class="flex flex-wrap items-center justify-between gap-2">
+					<div></div>
 					<Button icon="pi pi-refresh" @click="fetchReservas" rounded raised />
 				</div>
 			</template>
@@ -101,118 +129,39 @@
 					</Fieldset>
 				</div>
 			</div>
-			<template #footer>
-				<div class="mt-4">
-					<Button
-						label="Rechazar"
-						severity="danger"
-						@click="rechazarReserva"
-						autofocus
-						outlined
-						class="mr-2"
-						:loading="loadingRechazar"
-						:disabled="loadingRechazar"
-					/>
-					<Button
-						label="Confirmar"
-						@click="confirmarReserva"
-						autofocus
-						:loading="loadingConfirmar"
-						:disabled="loadingConfirmar"
-					/>
-				</div>
-			</template>
 		</Dialog>
 	</div>
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import { format } from '@formkit/tempo'
+import { useReservas } from '@/composables/useReservas'
+
+const { getReservasConfirmadas } = useReservas()
 
 const reservas = ref([])
-const reservaFiltrada = ref(null)
-
+const reservaFiltrada = ref({})
 const visible = ref(false)
-const loadingRechazar = ref(false)
-const disabledRechazar = ref(false)
-const loadingConfirmar = ref(false)
-const disabledConfirmar = ref(false)
+
+const skeletons = ref(new Array(6))
+const fetching = ref(false)
 
 onMounted(async () => {
-	reservas.value = await traerReservas()
+	fetching.value = true
+	reservas.value = await getReservasConfirmadas()
+	fetching.value = false
 })
 
 const fetchReservas = async () => {
-	reservas.value = await traerReservas()
+	fetching.value = true
+	reservas.value = await getReservasConfirmadas()
+	fetching.value = false
 }
 
-const traerReservas = async () => {
-	const res = await fetch(
-		'https://n8n.friktek.com/webhook/confirmaciones?estado=pendiente'
-	)
-	const data = await res.json()
-	return data.data
-}
-
-const confirmarReserva = async () => {
-	loadingConfirmar.value = true
-	disabledConfirmar.value = true
-	disabledRechazar.value = true
-	const res = await fetch('https://n8n.friktek.com/webhook/confirmaciones', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({
-			identificador: reservaFiltrada.value.identificador,
-			idProg: reservaFiltrada.value.idProg,
-		}),
-	})
-	loadingConfirmar.value = false
-	disabledConfirmar.value = false
-	disabledRechazar.value = false
-	const data = await res.json()
-	if (data.success) {
-		reservas.value.splice(reservas.value.indexOf(reservaFiltrada.value), 1)
-		visible.value = false
-		return
-	}
-
-	return
-}
-
-const rechazarReserva = async () => {
-	loadingRechazar.value = true
-	disabledRechazar.value = true
-	disabledConfirmar.value = true
-	const res = await fetch('https://n8n.friktek.com/webhook/rechazos', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({
-			identificador: reservaFiltrada.value.identificador,
-			idProg: reservaFiltrada.value.idProg,
-		}),
-	})
-	loadingRechazar.value = false
-	disabledRechazar.value = false
-	disabledConfirmar.value = false
-	const data = await res.json()
-	if (data.success) {
-		reservas.value.splice(reservas.value.indexOf(reservaFiltrada.value), 1)
-		visible.value = false
-		return
-	}
-
-	return
-}
-
-const verReserva = (id) => {
+const verReserva = (identificador) => {
 	reservaFiltrada.value = reservas.value.find(
-		(reserva) => reserva.identificador === id
+		(el) => el.identificador === identificador
 	)
 	visible.value = true
 }
 </script>
-<style scoped></style>

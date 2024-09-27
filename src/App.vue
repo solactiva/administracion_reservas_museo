@@ -1,5 +1,6 @@
 <template>
-	<main class="container mx-auto px-4">
+	<main class="container mx-auto px-4 lg:px-36 py-0">
+		<Toast position="top-center" :pt="{ root: 'w-11/12' }" />
 		<Menubar class="mb-5 sticky top-0 py-0 px-2">
 			<template #start>
 				<h1 class="text-lg font-bold text-primary">
@@ -16,14 +17,11 @@
 				/>
 			</template>
 		</Menubar>
+		<RouterView />
 	</main>
-	<div class="container mx-auto px-2">
-		<HomePage />
-	</div>
 </template>
-<script setup>
-import HomePage from './components/HomePage.vue'
 
+<script setup>
 const toggleTheme = () => {
 	const theme = document.querySelector('html')
 	theme.classList.toggle('dark-mode')

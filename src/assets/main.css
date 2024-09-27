@@ -1,4 +1,4 @@
-@layer tailwind-base, primevue, tailwind-utilities;
+@layer tailwind-base, primevue, tailwind-utilities, custom-styles;
 
 @layer tailwind-base {
 	@tailwind base;
@@ -7,4 +7,17 @@
 @layer tailwind-utilities {
 	@tailwind components;
 	@tailwind utilities;
+}
+
+@layer custom-styles {
+	/* Estilos personalizados para forzar el modo oscuro */
+	:root.dark-mode,
+	:root.dark-mode body {
+		background-color: var(--p-background-color) !important;
+	}
+
+	:root.dark-mode .p-component {
+		background-color: var(--p-background-color);
+		color: var(--p-text-color);
+	}
 }
