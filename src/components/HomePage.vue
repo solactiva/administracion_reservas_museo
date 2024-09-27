@@ -4,7 +4,7 @@
 			<template #header>
 				<div class="flex flex-wrap items-center justify-between gap-2">
 					<span class="text-xl font-bold">RESERVAS PARA CONFIRMAR</span>
-					<Button icon="pi pi-refresh" rounded raised />
+					<Button icon="pi pi-refresh" @click="fetchReservas" rounded raised />
 				</div>
 			</template>
 			<Column header="Fecha Registro">
@@ -141,6 +141,10 @@ const disabledConfirmar = ref(false)
 onMounted(async () => {
 	reservas.value = await traerReservas()
 })
+
+const fetchReservas = async () => {
+	reservas.value = await traerReservas()
+}
 
 const traerReservas = async () => {
 	const res = await fetch(
