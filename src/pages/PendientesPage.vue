@@ -50,7 +50,12 @@
 			<Column field="programacion.fecha" header="Día de reserva">
 				<template #body="slotProps">
 					{{
-						format(new Date(slotProps.data.programacion.fecha), 'medium', 'es')
+						format({
+							date: new Date(slotProps.data.programacion.fecha),
+							format: 'medium',
+							locale: 'es',
+							tz: 'UTC',
+						})
 					}}
 				</template>
 			</Column>
@@ -101,11 +106,12 @@
 							<span class="font-bold">Fecha de reserva:</span>
 							<span>
 								{{
-									format(
-										new Date(reservaFiltrada.programacion.fecha),
-										'medium',
-										'es'
-									)
+									format({
+										date: new Date(reservaFiltrada.programacion.fecha),
+										format: 'medium',
+										locale: 'es',
+										tz: 'UTC',
+									})
 								}}
 							</span>
 						</div>

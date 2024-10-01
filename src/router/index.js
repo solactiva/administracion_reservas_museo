@@ -1,4 +1,4 @@
-import { createWebHistory, createRouter } from 'vue-router'
+import { createWebHistory, createRouter, createMemoryHistory } from 'vue-router'
 
 import ReservasView from '@/pages/ReservasView.vue'
 
@@ -27,7 +27,7 @@ const routes = [
 ]
 
 const router = createRouter({
-	history: createWebHistory(),
+	history: createMemoryHistory(),
 	routes,
 })
 
