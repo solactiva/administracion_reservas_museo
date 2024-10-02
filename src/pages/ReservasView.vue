@@ -1,4 +1,238 @@
 <template>
+	<Accordion value="0" class="mb-5">
+		<AccordionPanel value="0">
+			<AccordionHeader>Registrar reserva</AccordionHeader>
+			<AccordionContent>
+				<div class="grid grid-cols-1 md:grid-cols-2">
+					<div class="flex justify-center mb-5 md:mb-0">
+						<DatePicker
+							inline
+							v-model="fechaSeleccionada"
+							:disabled-days="evento?.diasNoActivo"
+							:minDate="new Date()"
+							@update:model-value="
+								cargarHorarios(fechaSeleccionada, evento?.identificador)
+							"
+						/>
+					</div>
+					<div class="grid grid-cols-2 gap-4 justify-center" v-if="action">
+						<Skeleton
+							width="100%"
+							height="5rem"
+							v-for="index in 6"
+							:key="index"
+						></Skeleton>
+					</div>
+					<div class="grid grid-cols-2 gap-4 justify-center" v-else>
+						<template v-for="horario in horarios" :key="horario.identificador">
+							<Button
+								severity="secondary"
+								class="flex flex-col items-center"
+								@click="registrarDatosReserva(horario.identificador)"
+								:disabled="
+									botonDesactivado(horario.inicioEvento, horario.activo)
+								"
+							>
+								<div class="text-center font-semibold text-xl">
+									{{ `${horario.inicioEvento} - ${horario.finEvento}` }}
+								</div>
+								<div class="text-center text-sm">
+									{{ horario.spots }} disponibles
+								</div>
+							</Button>
+						</template>
+					</div>
+				</div>
+			</AccordionContent>
+		</AccordionPanel>
+	</Accordion>
+	<Dialog
+		v-model:visible="visible"
+		modal
+		header="Datos de reserva"
+		:pt="{
+			root: 'w-11/12 md:w-9/12 lg:w-6/12',
+		}"
+	>
+		<template #header>
+			<div class="flex flex-col w-full">
+				<h2 class="text-lg font-bold mb-1">Datos de reserva</h2>
+				<div class="grid grid-cols-3 w-full text-sm">
+					<div class="flex flex-col items-center">
+						<span class="font-bold">HORARIO</span>
+						<span>{{ `${horario.inicioEvento} - ${horario.finEvento}` }}</span>
+					</div>
+					<div class="flex flex-col items-center">
+						<span class="font-bold">CUPOS</span>
+						<span>{{ cuposRestantes }}</span>
+					</div>
+					<div class="flex flex-col items-center">
+						<span class="font-bold">TOTAL</span>
+						<span>{{ precioTotal }} BOB</span>
+					</div>
+				</div>
+			</div>
+		</template>
+		<div class="w-full">
+			<div class="flex mb-5">
+				<div class="w-1/2 flex flex-col gap-2">
+					<div v-for="(pago, index) in evento.precios" :key="index">
+						<label :for="`cantidad-personas${index}`" class="text-sm mb-0">
+							{{ pago.tipo }}
+						</label>
+						<InputNumber
+							inputClass="h-7"
+							fluid
+							:inputId="`cantidad-personas${index}`"
+							:invalid="invalid"
+							v-model="reserva.cantidad[index].cantidad"
+							showButtons
+							buttonLayout="horizontal"
+							:min="0"
+							:max="
+								cuposRestantes <= 0
+									? reserva.cantidad[index].cantidad
+									: horario.spots
+							"
+						>
+							<template #incrementbuttonicon>
+								<span class="pi pi-plus" />
+							</template>
+							<template #decrementbuttonicon>
+								<span class="pi pi-minus" />
+							</template>
+						</InputNumber>
+					</div>
+				</div>
+				<div class="flex w-1/2 items-center justify-center flex-col">
+					<Button label="Agregar adicionales" />
+				</div>
+			</div>
+			<div class="flex flex-col gap-2">
+				<div>
+					<label for="nombre-cliente" class="text-sm">Nombre completo</label>
+					<InputText
+						class="uppercase"
+						type="text"
+						id="nombre-cliente"
+						size="small"
+						fluid
+						v-model="reserva.cliente.nombre"
+						:invalid="reserva.cliente.nombre === '' && invalid"
+					/>
+				</div>
+				<div>
+					<label for="correo-cliente" class="text-sm">Correo electrónico</label>
+					<InputText
+						class="lowercase"
+						type="email"
+						id="correo-cliente"
+						size="small"
+						fluid
+						v-model="reserva.cliente.email"
+						:invalid="reserva.cliente.email === '' && invalid"
+					/>
+				</div>
+				<div>
+					<label for="lugar-cliente" class="text-sm"
+						>Desde donde nos visitas</label
+					>
+					<InputGroup>
+						<Select
+							v-model="searchCountry.country"
+							:options="countries"
+							optionLabel="country"
+							placeholder="🌎"
+							class="w-2/5"
+							v-on:update:model-value="loadStates(searchCountry.country.code)"
+						>
+						</Select>
+						<Select
+							v-model="searchCountry.state"
+							:disabled="searchCountry.country === null || states.length === 0"
+							:loading="loadingState"
+							:options="states"
+							optionLabel="name"
+							placeholder="Seleccione..."
+							class="w-2/5"
+							v-on:update:model-value="loadCities(searchCountry.state.id)"
+						>
+						</Select>
+						<Select
+							v-model="searchCountry.cytie"
+							:disabled="searchCountry.state === null || cities.length === 0"
+							:options="cities"
+							:loading="loadingCity"
+							optionLabel="name"
+							placeholder="Seleccione..."
+							class="w-2/5"
+						>
+						</Select>
+					</InputGroup>
+				</div>
+				<div>
+					<label for="numero-cliente" class="text-sm">Número de teléfono</label>
+					<InputGroup>
+						<Select
+							v-model="selectedCountry"
+							:options="countries"
+							optionLabel="country"
+							placeholder="🌎"
+							class="w-2/5"
+						>
+							<template #value="slotProps">
+								<div v-if="slotProps.value" class="flex items-center">
+									<img
+										:alt="slotProps.value.country"
+										:src="slotProps.value.flag"
+										:class="`mr-2 flag flag-${slotProps.value.code.toLowerCase()}`"
+										style="width: 18px"
+									/>
+									<div>
+										{{ `(+${slotProps.value.countryCode})` }}
+									</div>
+								</div>
+								<span v-else>
+									{{ slotProps.placeholder }}
+								</span>
+							</template>
+							<template #option="slotProps">
+								<div class="flex items-center">
+									<img
+										:alt="slotProps.option.label"
+										:src="slotProps.option.flag"
+										:class="`mr-2`"
+										style="width: 18px"
+									/>
+									<div>
+										{{ slotProps.option.country }} (+
+										{{ slotProps.option.countryCode }})
+									</div>
+								</div>
+							</template>
+						</Select>
+						<InputNumber
+							v-model="numero"
+							:invalid="numero === null && invalid"
+							inputId="numero-cliente"
+							:useGrouping="false"
+							class="w-auto"
+						/>
+					</InputGroup>
+				</div>
+			</div>
+		</div>
+		<template #footer>
+			<div class="flex gap-2 mt-5">
+				<Button
+					label="Cancelar"
+					@click="visible = false"
+					severity="secondary"
+				/>
+				<Button label="Registrar" severity="primary" />
+			</div>
+		</template>
+	</Dialog>
 	<Tabs value="pendientes">
 		<TabList>
 			<Tab v-for="tab in items" :key="tab.label" :value="tab.route">
@@ -24,10 +258,83 @@
 	<RouterView />
 </template>
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive, computed } from 'vue'
+import { useEvento } from '@/composables/useEvento'
+import { useHorarios } from '@/composables/useHorarios'
+import { useReservas } from '@/composables/useReservas'
+import countries from '@/data/countries.json'
+
+const { evento, cargarEvento } = useEvento()
+const { horarios, action, cargarHorarios } = useHorarios()
+const { reserva, horario, registrarReserva } = useReservas()
+
+const fechaSeleccionada = ref(new Date())
+const visible = ref(false)
+
+const registrarDatosReserva = (idProg) => {
+	reserva.value.cantidad = evento.value.precios.map((pago) => ({
+		tipo: pago.tipo,
+		cantidad: 0,
+	}))
+	horario.value = horarios.value.find(
+		(horario) => horario.identificador === idProg
+	)
+	visible.value = true
+}
 
 const items = ref([
 	{ route: 'pendientes', label: 'Pendientes', icon: 'pi pi-hourglass' },
 	{ route: 'confirmados', label: 'Confirmados', icon: 'pi pi-check-square' },
 ])
+
+const botonDesactivado = (hora, activo) => {
+	const actual = new Date()
+	const horario = new Date(fechaSeleccionada.value)
+	horario.setHours(hora.split(':')[0], hora.split(':')[1])
+
+	if (actual > horario) return true
+	return !activo
+}
+
+cargarEvento('d999971a-613f-4093-9361-9213f819d011')
+cargarHorarios(fechaSeleccionada.value, 'd999971a-613f-4093-9361-9213f819d011')
+
+const selectedCountry = ref({
+	country: 'Bolivia',
+	countryCode: 591,
+	code: 'BO',
+	flag: 'https://flagcdn.com/bo.svg',
+	emoji: '🇧🇴',
+	latinAmerica: true,
+	phoneLength: 9,
+})
+
+const searchCountry = reactive({
+	country: null,
+	state: null,
+	cytie: null,
+})
+
+const states = ref([])
+const cities = ref([])
+const numero = ref(null)
+const loading = ref(false)
+const invalid = ref(false)
+const loadingState = ref(false)
+const loadingCity = ref(false)
+
+const cuposRestantes = computed(
+	() =>
+		horario.value.spots -
+		reserva.value.cantidad.reduce((acc, curr) => acc + curr.cantidad, 0)
+)
+const precioTotal = computed(() =>
+	reserva.value.cantidad.reduce(
+		(acc, curr) =>
+			acc +
+			evento.value.precios.find((p) => p.tipo === curr.tipo).precio *
+				curr.cantidad,
+		0
+	)
+)
 </script>

@@ -25,7 +25,10 @@
 						v-if="hasSubmenu"
 						:class="[
 							'pi pi-angle-down',
-							{ 'pi-angle-down ml-2': root, 'pi-angle-right ml-auto': !root },
+							{
+								'pi-angle-down ml-2': root,
+								'pi-angle-right ml-auto': !root,
+							},
 						]"
 					></i>
 				</a>
@@ -56,16 +59,20 @@ const toggleTheme = () => {
 
 const items = ref([
 	{
-		label: 'Home',
-		icon: 'pi pi-home',
+		label: 'Reservas',
+		icon: 'pi pi-book',
 	},
 	{
-		label: 'Features',
+		label: 'Eventos',
 		icon: 'pi pi-star',
 	},
 	{
-		label: 'Projects',
-		icon: 'pi pi-search',
+		label: 'Programaciones',
+		icon: 'pi pi-calendar',
+	},
+	{
+		label: 'Configuraciones',
+		icon: 'pi pi-cog',
 		items: [
 			{
 				label: 'Core',
@@ -82,31 +89,7 @@ const items = ref([
 				icon: 'pi pi-pencil',
 				shortcut: '⌘+U',
 			},
-			{
-				separator: true,
-			},
-			{
-				label: 'Templates',
-				icon: 'pi pi-palette',
-				items: [
-					{
-						label: 'Apollo',
-						icon: 'pi pi-palette',
-						badge: 2,
-					},
-					{
-						label: 'Ultima',
-						icon: 'pi pi-palette',
-						badge: 3,
-					},
-				],
-			},
 		],
-	},
-	{
-		label: 'Contact',
-		icon: 'pi pi-envelope',
-		badge: 3,
 	},
 ])
 </script>

@@ -5,6 +5,7 @@ import ConfirmationService from 'primevue/confirmationservice'
 import Aura from '@primevue/themes/aura'
 
 import App from './App.vue'
+import pinia from './stores'
 import router from './router'
 
 import '@/config/axios'
@@ -15,6 +16,7 @@ import 'primeicons/primeicons.css'
 const app = createApp(App)
 app.use(ToastService)
 app.use(ConfirmationService)
+app.use(pinia)
 app.use(router)
 app.use(PrimeVue, {
 	theme: {
