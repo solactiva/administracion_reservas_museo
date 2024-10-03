@@ -74,15 +74,18 @@
 			</div>
 		</template>
 		<div class="w-full">
-			<div class="flex mb-5">
-				<div class="w-1/2 flex flex-col gap-2">
-					<div v-for="(pago, index) in evento.precios" :key="index">
-						<label :for="`cantidad-personas${index}`" class="text-sm mb-0">
+			<div class="flex gap-2 md:gap-7">
+				<div class="w-1/2 sm:w-1/4 flex flex-col gap-2">
+					<div
+						v-for="(pago, index) in evento.precios"
+						:key="index"
+						class="flex flex-col"
+					>
+						<label :for="`cantidad-personas${index}`" class="text-sm">
 							{{ pago.tipo }}
 						</label>
 						<InputNumber
-							inputClass="h-7"
-							fluid
+							inputClass="h-8 w-full"
 							:inputId="`cantidad-personas${index}`"
 							:invalid="invalid"
 							v-model="reserva.cantidad[index].cantidad"
@@ -104,18 +107,52 @@
 						</InputNumber>
 					</div>
 				</div>
-				<div class="flex w-1/2 items-center justify-center flex-col">
-					<Button label="Agregar adicionales" />
+				<div class="w-1/2 sm:w-3/4">
+					<Fieldset
+						legend="Adicionales"
+						:toggleable="true"
+						:collapsed="true"
+						v-on:toggle="console.log($event.value ? 'collapsed' : 'expanded')"
+					>
+						<div
+							class="flex mb-2"
+							v-for="(pago, index) in evento.precios"
+							:key="index"
+						>
+							<label
+								:for="`cantidad-adicionales${index}`"
+								class="text-sm w-3/4"
+							>
+								{{ pago.tipo }}
+							</label>
+							<InputNumber
+								inputClass="h-8 w-full"
+								:inputId="`cantidad-adicionales${index}`"
+								:invalid="invalid"
+								v-model="reserva.cantidadAdicionales[index].cantidad"
+								showButtons
+								buttonLayout="horizontal"
+								:min="0"
+							>
+								<template #incrementbuttonicon>
+									<span class="pi pi-plus" />
+								</template>
+								<template #decrementbuttonicon>
+									<span class="pi pi-minus" />
+								</template>
+							</InputNumber>
+						</div>
+					</Fieldset>
 				</div>
 			</div>
+			<Divider type="dashed" />
 			<div class="flex flex-col gap-2">
 				<div>
 					<label for="nombre-cliente" class="text-sm">Nombre completo</label>
 					<InputText
-						class="uppercase"
+						class="uppercase h-8"
 						type="text"
 						id="nombre-cliente"
-						size="small"
 						fluid
 						v-model="reserva.cliente.nombre"
 						:invalid="reserva.cliente.nombre === '' && invalid"
@@ -124,10 +161,9 @@
 				<div>
 					<label for="correo-cliente" class="text-sm">Correo electrónico</label>
 					<InputText
-						class="lowercase"
+						class="lowercase h-8"
 						type="email"
 						id="correo-cliente"
-						size="small"
 						fluid
 						v-model="reserva.cliente.email"
 						:invalid="reserva.cliente.email === '' && invalid"
@@ -137,13 +173,14 @@
 					<label for="lugar-cliente" class="text-sm"
 						>Desde donde nos visitas</label
 					>
-					<InputGroup>
+					<InputGroup class="h-8">
 						<Select
 							v-model="searchCountry.country"
 							:options="countries"
 							optionLabel="country"
 							placeholder="🌎"
-							class="w-2/5"
+							class="w-1/3"
+							labelClass="text-sm pt-[0.4rem]"
 							v-on:update:model-value="loadStates(searchCountry.country.code)"
 						>
 						</Select>
@@ -154,7 +191,8 @@
 							:options="states"
 							optionLabel="name"
 							placeholder="Seleccione..."
-							class="w-2/5"
+							class="w-1/3"
+							labelClass="text-sm pt-[0.4rem]"
 							v-on:update:model-value="loadCities(searchCountry.state.id)"
 						>
 						</Select>
@@ -165,20 +203,22 @@
 							:loading="loadingCity"
 							optionLabel="name"
 							placeholder="Seleccione..."
-							class="w-2/5"
+							class="w-1/3"
+							labelClass="text-sm pt-[0.4rem]"
 						>
 						</Select>
 					</InputGroup>
 				</div>
 				<div>
 					<label for="numero-cliente" class="text-sm">Número de teléfono</label>
-					<InputGroup>
+					<InputGroup class="h-8">
 						<Select
 							v-model="selectedCountry"
 							:options="countries"
 							optionLabel="country"
 							placeholder="🌎"
-							class="w-2/5"
+							class="w-3/12"
+							labelClass="text-sm pt-[0.4rem]"
 						>
 							<template #value="slotProps">
 								<div v-if="slotProps.value" class="flex items-center">
@@ -216,7 +256,7 @@
 							:invalid="numero === null && invalid"
 							inputId="numero-cliente"
 							:useGrouping="false"
-							class="w-auto"
+							class="w-9/12"
 						/>
 					</InputGroup>
 				</div>
@@ -229,7 +269,12 @@
 					@click="visible = false"
 					severity="secondary"
 				/>
-				<Button label="Registrar" severity="primary" />
+				<Button
+					label="Registrar"
+					severity="primary"
+					:loading="loading"
+					@click="actionRegistrarReserva"
+				/>
 			</div>
 		</template>
 	</Dialog>
@@ -255,7 +300,14 @@
 			</Tab>
 		</TabList>
 	</Tabs>
-	<RouterView />
+	<Suspense>
+		<RouterView />
+		<template #fallback>
+			<div class="flex justify-center items-center h-96">
+				<Skeleton width="100%" height="10rem" />
+			</div>
+		</template>
+	</Suspense>
 </template>
 <script setup>
 import { ref, reactive, computed } from 'vue'
@@ -266,13 +318,18 @@ import countries from '@/data/countries.json'
 
 const { evento, cargarEvento } = useEvento()
 const { horarios, action, cargarHorarios } = useHorarios()
-const { reserva, horario, registrarReserva } = useReservas()
+const { reserva, horario, cleanReserva, registrarReserva, getStates, getCities } =
+	useReservas()
 
 const fechaSeleccionada = ref(new Date())
 const visible = ref(false)
 
 const registrarDatosReserva = (idProg) => {
 	reserva.value.cantidad = evento.value.precios.map((pago) => ({
+		tipo: pago.tipo,
+		cantidad: 0,
+	}))
+	reserva.value.cantidadAdicionales = evento.value.precios.map((pago) => ({
 		tipo: pago.tipo,
 		cantidad: 0,
 	}))
@@ -328,13 +385,52 @@ const cuposRestantes = computed(
 		horario.value.spots -
 		reserva.value.cantidad.reduce((acc, curr) => acc + curr.cantidad, 0)
 )
-const precioTotal = computed(() =>
-	reserva.value.cantidad.reduce(
-		(acc, curr) =>
-			acc +
-			evento.value.precios.find((p) => p.tipo === curr.tipo).precio *
-				curr.cantidad,
+const precioTotal = computed(() => {
+	const total = reserva.value.cantidad.reduce(
+		(acc, curr, index) =>
+			acc + curr.cantidad * evento.value.precios[index].precio,
 		0
 	)
-)
+	const adicionales = reserva.value.cantidadAdicionales.reduce(
+		(acc, curr, index) =>
+			acc + curr.cantidad * evento.value.precios[index].precio,
+		0
+	)
+	return total + adicionales
+})
+
+const actionRegistrarReserva = async () => {
+	// loading.value = true
+	console.log(searchCountry)
+	reserva.value.cliente.telefono = `${selectedCountry.value.countryCode}${numero.value}`
+	reserva.value.cliente.pais = searchCountry.country.country
+	reserva.value.cliente.estado = searchCountry.state.name
+	reserva.value.cliente.ciudad = searchCountry.cities === null ? 'searchCountry.cytie.name' : ''
+	reserva.value.pago.total = precioTotal.value
+
+	const res = await registrarReserva()
+	loading.value = false
+	if (res.success) {
+		visible.value = false
+		cleanReserva()
+		return
+	}
+}
+
+const loadStates = async (country) => {
+	cities.value = []
+	states.value = []
+	searchCountry.state = null
+	searchCountry.cytie = null
+	loadingState.value = true
+	states.value = await getStates(country)
+	loadingState.value = false
+}
+const loadCities = async (state) => {
+	cities.value = []
+	searchCountry.cytie = null
+	loadingCity.value = true
+	cities.value = await getCities(state)
+	loadingCity.value = false
+}
 </script>

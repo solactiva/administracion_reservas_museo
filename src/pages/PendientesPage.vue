@@ -46,7 +46,13 @@
 					}}
 				</template>
 			</Column>
-			<Column field="cliente.nombre" header="Nombre"></Column>
+			<Column field="cliente.nombre" header="Nombre">
+				<template #body="slotProps">
+					<OverlayBadge severity="warn">
+						{{ slotProps.data.cliente.nombre }}
+					</OverlayBadge>
+				</template>
+			</Column>
 			<Column field="programacion.fecha" header="Día de reserva">
 				<template #body="slotProps">
 					{{
