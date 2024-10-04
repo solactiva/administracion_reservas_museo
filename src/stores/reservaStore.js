@@ -13,7 +13,9 @@ export const useReservaStore = defineStore('reserva', {
 					telefono: '',
 				},
 				cantidad: [],
+				cantidadAdicional: [],
 				cantidadTotal: 0,
+				cantidadTotalAdicional: 0,
 				pago: {
 					total: 0,
 					comprobante: null,
@@ -25,6 +27,18 @@ export const useReservaStore = defineStore('reserva', {
 				inicioEvento: null,
 				finEvento: null,
 				spots: 0,
+			},
+			world: {
+				states: [],
+				cities: [],
+			},
+			selectedPlace: {
+				pais: {},
+				estado: {},
+			},
+			interactividad: {
+				loading: false,
+				visible: false,
 			},
 		}
 	},

@@ -11,7 +11,23 @@ import { useReservaStore } from '@/stores/reservaStore'
 
 export const useReservas = () => {
 	const reservaStore = useReservaStore()
-	const { reserva, horario } = storeToRefs(reservaStore)
+	const { reserva, horario, world, selectedPlace, interactividad } =
+		storeToRefs(reservaStore)
+
+	const loadStates = async (country_code) => {
+		world.value.states = []
+		world.value.cities = []
+		interactividad.value.loading = true
+		world.value.states = await getStates(country_code)
+		interactividad.value.loading = false
+	}
+
+	const loadCities = async (state_id) => {
+		world.value.cities = []
+		interactividad.value.loading = true
+		world.value.cities = await getCities(state_id)
+		interactividad.value.loading = false
+	}
 
 	const getReservasPendientes = async () => {
 		const response = await getReservas('pendiente')
@@ -37,20 +53,19 @@ export const useReservas = () => {
 		reserva.value.idProg = horario.value.identificador
 		reserva.value.cliente.nombre = reserva.value.cliente.nombre.toUpperCase()
 		reserva.value.cliente.email = reserva.value.cliente.email.toLowerCase()
+		reserva.value.cliente.pais = selectedPlace.value.pais.country
+		reserva.value.cliente.estado = selectedPlace.value.estado.name
 		reserva.value.fechaRegistro = new Date().toISOString()
 		reserva.value.cantidadTotal = reserva.value.cantidad.reduce(
 			(acc, curr) => acc + curr.cantidad,
 			0
 		)
-		reserva.value.cantidadTotalAdicional = reserva.value.cantidadAdicionales.reduce(
-			(acc, curr) => acc + curr.cantidad,
-			0
-		)
+		reserva.value.cantidadTotalAdicional =
+			reserva.value.cantidadAdicional.reduce(
+				(acc, curr) => acc + curr.cantidad,
+				0
+			)
 		console.log(reserva.value)
-		return {
-			success: true,
-			message: 'Reserva registrada con éxito',
-		}
 		const response = await postReserva(reserva.value)
 		return response
 	}
@@ -62,16 +77,18 @@ export const useReservas = () => {
 	return {
 		reserva,
 		horario,
-		
-		cleanReserva,
+		world,
+		selectedPlace,
+		interactividad,
 
+		loadStates,
+		loadCities,
 		getReservasPendientes,
 		getReservasConfirmadas,
 		getReservasRechazadas,
-		getCities,
-		getStates,
 		registrarReserva,
 		confirmarReserva,
 		rechazarReserva,
+		cleanReserva,
 	}
 }

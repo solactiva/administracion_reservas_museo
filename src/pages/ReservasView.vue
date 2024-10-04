@@ -129,7 +129,7 @@
 								inputClass="h-8 w-full"
 								:inputId="`cantidad-adicionales${index}`"
 								:invalid="invalid"
-								v-model="reserva.cantidadAdicionales[index].cantidad"
+								v-model="reserva.cantidadAdicional[index].cantidad"
 								showButtons
 								buttonLayout="horizontal"
 								:min="0"
@@ -175,36 +175,37 @@
 					>
 					<InputGroup class="h-8">
 						<Select
-							v-model="searchCountry.country"
+							v-model="selectedPlace.pais"
 							:options="countries"
 							optionLabel="country"
 							placeholder="🌎"
 							class="w-1/3"
 							labelClass="text-sm pt-[0.4rem]"
-							v-on:update:model-value="loadStates(searchCountry.country.code)"
+							v-on:update:model-value="loadStates($event.code)"
 						>
 						</Select>
 						<Select
-							v-model="searchCountry.state"
-							:disabled="searchCountry.country === null || states.length === 0"
-							:loading="loadingState"
-							:options="states"
+							v-model="selectedPlace.estado"
+							:options="world.states"
 							optionLabel="name"
 							placeholder="Seleccione..."
 							class="w-1/3"
 							labelClass="text-sm pt-[0.4rem]"
-							v-on:update:model-value="loadCities(searchCountry.state.id)"
+							v-on:update:model-value="loadCities($event.id)"
+							:disabled="world.states.length === 0"
+							:loading="world.states.length === 0 && interactividad.loading"
 						>
 						</Select>
 						<Select
-							v-model="searchCountry.cytie"
-							:disabled="searchCountry.state === null || cities.length === 0"
-							:options="cities"
-							:loading="loadingCity"
+							v-model="reserva.cliente.ciudad"
+							:options="world.cities"
 							optionLabel="name"
+							optionValue="name"
 							placeholder="Seleccione..."
 							class="w-1/3"
 							labelClass="text-sm pt-[0.4rem]"
+							:disabled="world.cities.length === 0"
+							:loading="world.cities.length === 0 && interactividad.loading"
 						>
 						</Select>
 					</InputGroup>
@@ -272,7 +273,7 @@
 				<Button
 					label="Registrar"
 					severity="primary"
-					:loading="loading"
+					:loading="interactividad.loading"
 					@click="actionRegistrarReserva"
 				/>
 			</div>
@@ -310,16 +311,25 @@
 	</Suspense>
 </template>
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useEvento } from '@/composables/useEvento'
 import { useHorarios } from '@/composables/useHorarios'
 import { useReservas } from '@/composables/useReservas'
-import countries from '@/data/countries.json'
+import countries from '@/assets/countries.json'
 
 const { evento, cargarEvento } = useEvento()
 const { horarios, action, cargarHorarios } = useHorarios()
-const { reserva, horario, cleanReserva, registrarReserva, getStates, getCities } =
-	useReservas()
+const {
+	reserva,
+	horario,
+	world,
+	selectedPlace,
+	interactividad,
+	loadStates,
+	loadCities,
+	registrarReserva,
+	cleanReserva,
+} = useReservas()
 
 const fechaSeleccionada = ref(new Date())
 const visible = ref(false)
@@ -329,7 +339,7 @@ const registrarDatosReserva = (idProg) => {
 		tipo: pago.tipo,
 		cantidad: 0,
 	}))
-	reserva.value.cantidadAdicionales = evento.value.precios.map((pago) => ({
+	reserva.value.cantidadAdicional = evento.value.precios.map((pago) => ({
 		tipo: pago.tipo,
 		cantidad: 0,
 	}))
@@ -361,37 +371,18 @@ const selectedCountry = ref({
 	countryCode: 591,
 	code: 'BO',
 	flag: 'https://flagcdn.com/bo.svg',
-	emoji: '🇧🇴',
-	latinAmerica: true,
-	phoneLength: 9,
 })
 
-const searchCountry = reactive({
-	country: null,
-	state: null,
-	cytie: null,
-})
-
-const states = ref([])
-const cities = ref([])
 const numero = ref(null)
-const loading = ref(false)
 const invalid = ref(false)
-const loadingState = ref(false)
-const loadingCity = ref(false)
 
-const cuposRestantes = computed(
-	() =>
-		horario.value.spots -
-		reserva.value.cantidad.reduce((acc, curr) => acc + curr.cantidad, 0)
-)
 const precioTotal = computed(() => {
 	const total = reserva.value.cantidad.reduce(
 		(acc, curr, index) =>
 			acc + curr.cantidad * evento.value.precios[index].precio,
 		0
 	)
-	const adicionales = reserva.value.cantidadAdicionales.reduce(
+	const adicionales = reserva.value.cantidadAdicional.reduce(
 		(acc, curr, index) =>
 			acc + curr.cantidad * evento.value.precios[index].precio,
 		0
@@ -399,38 +390,24 @@ const precioTotal = computed(() => {
 	return total + adicionales
 })
 
+const cuposRestantes = computed(() => {
+	return (
+		horario.value.spots -
+		reserva.value.cantidad.reduce((acc, curr) => acc + curr.cantidad, 0)
+	)
+})
+
 const actionRegistrarReserva = async () => {
-	// loading.value = true
-	console.log(searchCountry)
+	interactividad.value.loading = true
 	reserva.value.cliente.telefono = `${selectedCountry.value.countryCode}${numero.value}`
-	reserva.value.cliente.pais = searchCountry.country.country
-	reserva.value.cliente.estado = searchCountry.state.name
-	reserva.value.cliente.ciudad = searchCountry.cities === null ? 'searchCountry.cytie.name' : ''
 	reserva.value.pago.total = precioTotal.value
 
 	const res = await registrarReserva()
-	loading.value = false
+	interactividad.value.loading = false
 	if (res.success) {
 		visible.value = false
 		cleanReserva()
 		return
 	}
-}
-
-const loadStates = async (country) => {
-	cities.value = []
-	states.value = []
-	searchCountry.state = null
-	searchCountry.cytie = null
-	loadingState.value = true
-	states.value = await getStates(country)
-	loadingState.value = false
-}
-const loadCities = async (state) => {
-	cities.value = []
-	searchCountry.cytie = null
-	loadingCity.value = true
-	cities.value = await getCities(state)
-	loadingCity.value = false
 }
 </script>
