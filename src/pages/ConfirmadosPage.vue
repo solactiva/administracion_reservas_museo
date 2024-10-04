@@ -1,5 +1,5 @@
 <template>
-	<div class="container mx-auto px-4">
+	<div class="container mx-auto">
 		<DataTable :value="skeletons" v-if="fetching">
 			<template #header>
 				<div class="flex flex-wrap items-center justify-between gap-2">
@@ -53,24 +53,44 @@
 					</OverlayBadge>
 				</template>
 			</Column>
-			<Column field="programacion.fecha" header="Día de reserva">
+			<Column header="Día de reserva">
 				<template #body="slotProps">
-					{{
-						format({
-							date: new Date(slotProps.data.programacion.fecha),
-							format: 'medium',
-							locale: 'es',
-							tz: 'UTC',
-						})
-					}}
+					<div class="flex flex-col">
+						<span>
+							{{
+								format({
+									date: new Date(slotProps.data.programacion.fecha),
+									format: 'medium',
+									locale: 'es',
+									tz: 'UTC',
+								})
+							}}
+						</span>
+						<span class="text-sm">
+							{{ slotProps.data.programacion.inicioEvento }} -
+							{{ slotProps.data.programacion.finEvento }}
+						</span>
+					</div>
 				</template>
 			</Column>
 			<Column
-				field="cantidadTotal"
 				header="Personas"
 				headerStyle="width: 5rem; text-align: center"
 				class="text-center"
-			></Column>
+			>
+				<template #body="slotProps">
+					<span class="mr-2">
+						<i class="pi pi-user"></i>
+						{{ slotProps.data.cantidadTotal }}
+					</span>
+					<span
+						class="text-gray-600"
+						v-if="slotProps.data.cantidadTotalAdicional"
+						><i class="pi pi-user-plus"></i>
+						{{ slotProps.data.cantidadTotalAdicional }}</span
+					>
+				</template>
+			</Column>
 			<Column
 				headerStyle="width: 5rem; text-align: center"
 				bodyStyle="text-align: center; overflow: visible"

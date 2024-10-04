@@ -1,4 +1,4 @@
-import { createWebHistory, createRouter, createMemoryHistory } from 'vue-router'
+import { createRouter, createMemoryHistory } from 'vue-router'
 
 import ReservasView from '@/pages/ReservasView.vue'
 
@@ -23,6 +23,11 @@ const routes = [
 				component: () => import('@/pages/ConfirmadosPage.vue'),
 			},
 		],
+	},
+	{
+		path: '/eventos',
+		name: 'Eventos',
+		component: () => import('@/pages/EventosView.vue'),
 	},
 ]
 

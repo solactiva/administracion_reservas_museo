@@ -1,5 +1,5 @@
 <template>
-	<div class="container mx-auto px-4">
+	<div class="container mx-auto">
 		<DataTable :value="skeletons" v-if="fetching">
 			<template #header>
 				<div class="flex flex-wrap items-center justify-between gap-2">

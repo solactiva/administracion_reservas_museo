@@ -29,9 +29,6 @@
 								severity="secondary"
 								class="flex flex-col items-center"
 								@click="registrarDatosReserva(horario.identificador)"
-								:disabled="
-									botonDesactivado(horario.inicioEvento, horario.activo)
-								"
 							>
 								<div class="text-center font-semibold text-xl">
 									{{ `${horario.inicioEvento} - ${horario.finEvento}` }}
@@ -73,9 +70,9 @@
 				</div>
 			</div>
 		</template>
-		<div class="w-full">
+		<div class="w-full mt-2">
 			<div class="flex gap-2 md:gap-7">
-				<div class="w-1/2 sm:w-1/4 flex flex-col gap-2">
+				<div class="w-5/12 sm:w-1/4 flex flex-col gap-2">
 					<div
 						v-for="(pago, index) in evento.precios"
 						:key="index"
@@ -107,7 +104,7 @@
 						</InputNumber>
 					</div>
 				</div>
-				<div class="w-1/2 sm:w-3/4">
+				<div class="w-7/12 sm:w-3/4">
 					<Fieldset
 						legend="Adicionales"
 						:toggleable="true"
@@ -115,13 +112,13 @@
 						v-on:toggle="console.log($event.value ? 'collapsed' : 'expanded')"
 					>
 						<div
-							class="flex mb-2"
+							class="flex flex-col sm:flex-row mb-2"
 							v-for="(pago, index) in evento.precios"
 							:key="index"
 						>
 							<label
 								:for="`cantidad-adicionales${index}`"
-								class="text-sm w-3/4"
+								class="text-sm mt-2 w-full sm:w-3/4"
 							>
 								{{ pago.tipo }}
 							</label>
@@ -218,7 +215,7 @@
 							:options="countries"
 							optionLabel="country"
 							placeholder="🌎"
-							class="w-3/12"
+							class="w-2/5 sm:w-3/12"
 							labelClass="text-sm pt-[0.4rem]"
 						>
 							<template #value="slotProps">
@@ -257,7 +254,7 @@
 							:invalid="numero === null && invalid"
 							inputId="numero-cliente"
 							:useGrouping="false"
-							class="w-9/12"
+							class="w-3/5 sm:w-9/12"
 						/>
 					</InputGroup>
 				</div>
@@ -353,15 +350,6 @@ const items = ref([
 	{ route: 'pendientes', label: 'Pendientes', icon: 'pi pi-hourglass' },
 	{ route: 'confirmados', label: 'Confirmados', icon: 'pi pi-check-square' },
 ])
-
-const botonDesactivado = (hora, activo) => {
-	const actual = new Date()
-	const horario = new Date(fechaSeleccionada.value)
-	horario.setHours(hora.split(':')[0], hora.split(':')[1])
-
-	if (actual > horario) return true
-	return !activo
-}
 
 cargarEvento('d999971a-613f-4093-9361-9213f819d011')
 cargarHorarios(fechaSeleccionada.value, 'd999971a-613f-4093-9361-9213f819d011')
