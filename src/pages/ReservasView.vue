@@ -46,7 +46,6 @@
 	<Dialog
 		v-model:visible="visible"
 		modal
-		header="Datos de reserva"
 		:pt="{
 			root: 'w-11/12 md:w-9/12 lg:w-6/12',
 		}"
@@ -309,12 +308,12 @@
 </template>
 <script setup>
 import { ref, computed } from 'vue'
-import { useEvento } from '@/composables/useEvento'
+import { useEventos } from '@/composables/useEventos'
 import { useHorarios } from '@/composables/useHorarios'
 import { useReservas } from '@/composables/useReservas'
 import countries from '@/assets/countries.json'
 
-const { evento, cargarEvento } = useEvento()
+const { evento, cargarEvento } = useEventos()
 const { horarios, action, cargarHorarios } = useHorarios()
 const {
 	reserva,

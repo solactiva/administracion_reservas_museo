@@ -1,6 +1,7 @@
 <template>
 	<main class="container mx-auto px-4 lg:px-36 py-0">
 		<Toast position="top-center" :pt="{ root: 'w-11/12' }" />
+		<ConfirmDialog></ConfirmDialog>
 		<Menubar :model="items">
 			<template #start>
 				<h1 class="text-lg font-bold text-primary">
