@@ -10,7 +10,7 @@ import router from './router'
 
 import '@/config/axios'
 import './assets/main.css'
-import './assets/base.css'
+// import './assets/base.css'
 import 'primeicons/primeicons.css'
 
 const app = createApp(App)

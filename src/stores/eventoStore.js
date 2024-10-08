@@ -15,6 +15,11 @@ export const useEventoStore = defineStore('evento', {
 				diasNoActivo: [],
 				activo: false,
 			},
+			interactividad: {
+				loading: false,
+				visible: false,
+				visibleProgramacion: false,
+			},
 		}
 	},
 	actions: {

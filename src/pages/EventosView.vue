@@ -8,7 +8,7 @@
 				class="p-0 m-0"
 				size="small"
 				v-tooltip="'Crear nuevo evento'"
-				@click="crearEvento"
+				@click="actionCrearEvento"
 			/>
 		</div>
 		<Divider class="mt-2 mb-6" />
@@ -54,7 +54,7 @@
 				label="Actualizar"
 				text
 				rounded
-				@click="actualizarEvento(selectedId)"
+				@click="actionActualizarEvento(selectedId)"
 			/>
 			<Button
 				icon="pi pi-clock"
@@ -62,7 +62,7 @@
 				label="Generar Programación"
 				text
 				rounded
-				@click="actualizarEvento(selectedId)"
+				@click="actionProgramacionEvento(selectedId)"
 			/>
 			<Divider type="dashed" class="m-0" />
 			<Button
@@ -76,7 +76,7 @@
 		</div>
 	</Popover>
 	<Dialog
-		v-model:visible="visible"
+		v-model:visible="interactividad.visible"
 		modal
 		:header="update ? 'Actualizar Evento' : 'Crear Nuevo Evento'"
 		:pt="{
@@ -108,13 +108,13 @@
 					<InputNumber v-model="eventoSelected.capacidad" fluid class="h-8" />
 				</div>
 				<div class="flex flex-col">
-					<label>Duración:</label>
+					<label>Duración (min):</label>
 					<InputNumber v-model="eventoSelected.duracion" fluid class="h-8" />
 				</div>
 			</div>
 			<div class="flex flex-col gap-2">
 				<div>
-					<label for="precio-evento">Precio:</label>
+					<label for="precio-evento">Precios:</label>
 					<InputGroup>
 						<InputText
 							v-model="precio.tipo"
@@ -124,8 +124,8 @@
 						<InputNumber v-model="precio.precio" class="h-8 w-1/3" />
 						<Button
 							icon="pi pi-plus"
-							severity="success"
-							@click="eventoSelected.precios.push({ ...precio })"
+							severity="primary"
+							@click="agregarPrecio"
 							class="h-8"
 						/>
 					</InputGroup>
@@ -142,7 +142,7 @@
 				</InputGroup>
 			</div>
 			<div class="flex flex-wrap gap-2">
-				<label class="w-full">Días de NO actividad:</label>
+				<label class="w-full">Días que el evento no estara activo:</label>
 				<div
 					v-for="dia of semana"
 					:key="dia.value"
@@ -150,17 +150,87 @@
 				>
 					<Checkbox
 						v-model="eventoSelected.diasNoActivo"
-						:inputId="dia.value"
+						:inputId="dia.label"
 						name="dia"
 						:value="dia.value"
 					/>
-					<label :for="dia.value" class="text-xs">{{ dia.label }}</label>
+					<label :for="dia.label" class="text-xs">{{ dia.label }}</label>
 				</div>
 			</div>
 		</div>
 		<template #footer>
-			<Button label="Cancelar" class="p-button-text" />
-			<Button label="Guardar" class="p-button-primary" />
+			<Button label="Cancelar" text @click="interactividad.visible = false" />
+			<Button
+				:label="update ? 'Actualizar' : 'Crear'"
+				@click="
+					update
+						? actualizarEvento(eventoSelected)
+						: crearEvento(eventoSelected)
+				"
+				:loading="interactividad.loading"
+			/>
+		</template>
+	</Dialog>
+	<Dialog
+		v-model:visible="interactividad.visibleProgramacion"
+		modal
+		header="Programación de Evento"
+		:pt="{
+			root: 'w-11/12 md:w-9/12 lg:w-6/12 text-sm',
+		}"
+	>
+		<div class="container flex flex-col gap-4">
+			<div class="flex flex-col">
+				<label>Selecciona rango de fechas de programación:</label>
+				<DatePicker
+					v-model="programacion.dates"
+					selectionMode="range"
+					:manualInput="false"
+				/>
+			</div>
+			<div class="flex flex-col">
+				<label>Agrega horas de inicio del horario:</label>
+				<InputGroup>
+					<InputMask
+						id="basic"
+						v-model="programacion.time"
+						mask="99:99"
+						placeholder="00:00"
+					/>
+					<Button
+						icon="pi pi-plus"
+						@click="
+							programacion.horarios.push({
+								inicioEvento: programacion.time,
+							})
+						"
+					/>
+				</InputGroup>
+			</div>
+			<div class="flex flex-col">
+				<h3>Horarios:</h3>
+				<div class="flex flex-wrap gap-2">
+					<template v-for="(el, index) in programacion.horarios" :key="index">
+						<Chip
+							:label="el.inicioEvento"
+							removable
+							v-on:remove="programacion.horarios.splice(index, 1)"
+						/>
+					</template>
+				</div>
+			</div>
+		</div>
+		<template #footer>
+			<Button
+				label="Cancelar"
+				text
+				@click="interactividad.visibleProgramacion = false"
+			/>
+			<Button
+				label="Generar"
+				:loading="interactividad.loading"
+				@click="generarProgramacion"
+			/>
 		</template>
 	</Dialog>
 </template>
@@ -169,18 +239,24 @@ import { ref, nextTick } from 'vue'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { useEventos } from '@/composables/useEventos'
+import { useProgramaciones } from '@/composables/useProgramaciones'
+import { format } from '@formkit/tempo'
 
 const {
 	eventos,
 	eventoSelected,
+	interactividad,
 	cargarEventos,
 	cargarEventoUpdate,
+	crearEvento,
+	actualizarEvento,
+	eliminarEvento,
 	cleanEvento,
 } = useEventos()
+const { crearProgramaciones } = useProgramaciones()
 const toast = useToast()
 const confirm = useConfirm()
 const op = ref()
-const visible = ref(false)
 const update = ref(false)
 const selectedId = ref()
 const precio = ref({
@@ -196,6 +272,11 @@ const semana = ref([
 	{ label: 'Sábado', value: 6 },
 	{ label: 'Domingo', value: 0 },
 ])
+
+const agregarPrecio = () => {
+	eventoSelected.value.precios.push({ ...precio.value })
+	precio.value = { tipo: '', precio: 0 }
+}
 
 const toggle = (event, identificador) => {
 	op.value.hide()
@@ -221,19 +302,14 @@ const confirmDelete = (id) => {
 		acceptProps: {
 			label: 'Eliminar',
 			severity: 'danger',
+			loading: interactividad.value.loading,
 		},
-		accept: () => {
-			console.log('Eliminando evento', id)
-			toast.add({
-				severity: 'info',
-				summary: 'Confirmado',
-				detail: 'Evento eliminado',
-				life: 3000,
-			})
+		accept: async () => {
+			await eliminarEvento(id)
 		},
 		reject: () => {
 			toast.add({
-				severity: 'error',
+				severity: 'warn',
 				summary: 'Cancelado',
 				detail: 'Operación cancelada',
 				life: 3000,
@@ -241,19 +317,43 @@ const confirmDelete = (id) => {
 		},
 	})
 }
-const actualizarEvento = async (id) => {
-	visible.value = true
-	update.value = true
-	console.log('Actualizando evento', id)
+const actionActualizarEvento = async (id) => {
 	cargarEventoUpdate(id)
+	update.value = true
+	interactividad.value.visible = true
 }
-const crearEvento = () => {
-	visible.value = true
-	update.value = false
-	console.log('Creando nuevo evento')
+const actionCrearEvento = () => {
 	cleanEvento()
+	update.value = false
+	interactividad.value.visible = true
 }
 
+const actionProgramacionEvento = async (id) => {
+	cargarEventoUpdate(id)
+	interactividad.value.visibleProgramacion = true
+}
+
+const programacion = ref({
+	dates: null,
+	time: null,
+	horarios: [],
+})
+
+const generarProgramacion = async () => {
+	const rangoFechas = {
+		inicio: format(new Date(programacion.value.dates[0]), 'YYYY-MM-DD'),
+		fin: format(new Date(programacion.value.dates[1]), 'YYYY-MM-DD'),
+	}
+
+	const payloadProgramacion = {
+		rangoFechas,
+		horarios: programacion.value.horarios,
+	}
+	interactividad.value.loading = true
+	await crearProgramaciones(payloadProgramacion, eventoSelected.value)
+	interactividad.value.loading = false
+	interactividad.value.visibleProgramacion = false
+}
 cargarEventos()
 </script>
 <style scoped></style>

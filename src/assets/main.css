@@ -9,8 +9,8 @@
 	@tailwind utilities;
 }
 
-@layer custom-styles {
-	/* Estilos personalizados para forzar el modo oscuro */
+/* @layer custom-styles {
+	Estilos personalizados para forzar el modo oscuro
 	:root.dark-mode,
 	:root.dark-mode body {
 		background-color: var(--p-background-color) !important;
@@ -21,3 +21,4 @@
 		color: var(--p-text-color);
 	}
 }
+*/

@@ -65,7 +65,6 @@ export const useReservas = () => {
 				(acc, curr) => acc + curr.cantidad,
 				0
 			)
-		console.log(reserva.value)
 		const response = await postReserva(reserva.value)
 		return response
 	}
