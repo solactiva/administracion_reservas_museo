@@ -12,7 +12,7 @@ import { useToast } from 'primevue/usetoast'
 export const useEventos = () => {
 	const toast = useToast()
 	const eventoStore = useEventoStore()
-	const { eventos, evento, eventoSelected, interactividad } =
+	const { eventos, evento, eventoSelected, interactividad, itemsReservas } =
 		storeToRefs(eventoStore)
 
 	const cargarEvento = async (idEvento) => {
@@ -21,8 +21,17 @@ export const useEventos = () => {
 	}
 
 	const cargarEventos = async () => {
+		interactividad.value.action = true
 		const response = await getEventos()
+		interactividad.value.action = false
 		eventos.value = response.data
+		itemsReservas.value = response.data.map((el) => {
+			return {
+				label: el.nombre,
+				icon: 'pi pi-circle-fill',
+				route: `/reservas/${el.identificador}`,
+			}
+		})
 	}
 
 	const cargarEventoUpdate = (idEvento) => {
@@ -113,7 +122,16 @@ export const useEventos = () => {
 	}
 
 	const cleanEvento = () => {
-		eventoStore.resetEventoSelected()
+		eventoSelected.value = {
+			identificador: crypto.randomUUID(),
+			nombre: '',
+			descripcion: '',
+			duracion: 0,
+			capacidad: 0,
+			precios: [],
+			diasNoActivo: [],
+			activo: false,
+		}
 	}
 
 	return {
@@ -121,6 +139,7 @@ export const useEventos = () => {
 		eventos,
 		eventoSelected,
 		interactividad,
+		itemsReservas,
 
 		cargarEvento,
 		cargarEventos,

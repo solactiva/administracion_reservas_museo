@@ -11,7 +11,7 @@
 							:disabled-days="evento?.diasNoActivo"
 							:minDate="new Date()"
 							@update:model-value="
-								cargarHorarios(fechaSeleccionada, evento?.identificador)
+								actualizarHorarios(fechaSeleccionada, evento?.identificador)
 							"
 						/>
 					</div>
@@ -275,15 +275,10 @@
 			</div>
 		</template>
 	</Dialog>
-	<Tabs value="pendientes">
+	<Tabs :value="`/pendientes`">
 		<TabList>
-			<Tab v-for="tab in items" :key="tab.label" :value="tab.route">
-				<router-link
-					v-if="tab.route"
-					v-slot="{ href, navigate }"
-					:to="tab.route"
-					custom
-				>
+			<Tab v-for="(tab, index) in items" :key="index" :value="tab.route">
+				<router-link v-slot="{ href, navigate }" :to="tab.route" custom>
 					<a
 						v-ripple
 						:href="href"
@@ -300,19 +295,19 @@
 	<Suspense>
 		<RouterView />
 		<template #fallback>
-			<div class="flex justify-center items-center h-96">
-				<Skeleton width="100%" height="10rem" />
-			</div>
+			<p>Cargando...</p>
 		</template>
 	</Suspense>
 </template>
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useEventos } from '@/composables/useEventos'
 import { useHorarios } from '@/composables/useHorarios'
 import { useReservas } from '@/composables/useReservas'
 import countries from '@/assets/countries.json'
 
+const ruta = useRoute()
 const { evento, cargarEvento } = useEventos()
 const { horarios, action, cargarHorarios } = useHorarios()
 const {
@@ -345,13 +340,44 @@ const registrarDatosReserva = (idProg) => {
 	visible.value = true
 }
 
-const items = ref([
-	{ route: 'pendientes', label: 'Pendientes', icon: 'pi pi-hourglass' },
-	{ route: 'confirmados', label: 'Confirmados', icon: 'pi pi-check-square' },
+/* const items = ref([
+	{
+		route: `${idEvento.value}/pendientes`,
+		label: 'Pendientes',
+		icon: 'pi pi-hourglass',
+	},
+	{
+		route: `${idEvento.value}/confirmados`,
+		label: 'Confirmados',
+		icon: 'pi pi-check-square',
+	},
+]) */
+const items = computed(() => [
+	{
+		route: `/reservas/${ruta.params.idEvento}/pendientes`,
+		label: 'Pendientes',
+		icon: 'pi pi-hourglass',
+	},
+	{
+		route: `/reservas/${ruta.params.idEvento}/confirmados`,
+		label: 'Confirmados',
+		icon: 'pi pi-check-square',
+	},
 ])
 
-cargarEvento('d999971a-613f-4093-9361-9213f819d011')
-cargarHorarios(fechaSeleccionada.value, 'd999971a-613f-4093-9361-9213f819d011')
+const idEvento = computed(() => ruta.params.idEvento)
+cargarEvento(idEvento.value)
+cargarHorarios(fechaSeleccionada.value, idEvento.value)
+
+watch(idEvento, async () => {
+	console.log('cambio')
+	await cargarEvento(idEvento.value)
+	await cargarHorarios(fechaSeleccionada.value, idEvento.value)
+})
+
+const actualizarHorarios = async (fecha, idEvento) => {
+	await cargarHorarios(fecha, idEvento)
+}
 
 const selectedCountry = ref({
 	country: 'Bolivia',

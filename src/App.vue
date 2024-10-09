@@ -32,22 +32,16 @@
 					<span v-if="hasSubmenu" class="pi pi-fw pi-angle-down ml-2" />
 				</a>
 			</template>
-			<template #end>
-				<Button
-					icon="pi pi-moon"
-					iconPos="right"
-					@click="toggleTheme"
-					size="small"
-					class="p-button-rounded p-button-text"
-				/>
-			</template>
 		</Menubar>
-		<RouterView />
-		<Dialog
-			v-model:visible="visible"
-			modal
-			header="Configuraciones Generales App"
-		>
+		<Suspense>
+			<template #default>
+				<RouterView />
+			</template>
+			<template #fallback>
+				<ProgressSpinner />
+			</template>
+		</Suspense>
+		<Dialog v-model:visible="visible" modal header="Configuraciones Generales">
 			<div class="flex flex-col gap-4">
 				<div class="grid grid-cols-2 gap-4">
 					<div class="flex flex-col items-center justify-center">
@@ -58,7 +52,7 @@
 							:maxFileSize="5000000"
 							invalidFileSizeMessage="Tamaño de archivo excedido"
 							invalidFileTypeMessage="Tipo de archivo no permitido"
-							@select="onSelect"
+							@select="onUpload"
 							customUpload
 							auto
 							chooseLabel="Subir QR de pago"
@@ -68,53 +62,86 @@
 						/>
 					</div>
 					<div>
-						<Image
-							src="https://via.placeholder.com/150"
-							alt="Image"
-							class="w-full"
-						/>
+						<Image alt="Image" preview>
+							<template #image>
+								<img
+									:src="configuracion.qrPago"
+									alt="image"
+									class="rounded-3xl"
+									style="width: 150px; height: 150px; object-fit: cover"
+								/>
+							</template>
+							<template #preview="slotProps">
+								<img
+									:src="configuracion.qrPago"
+									alt="preview"
+									:style="slotProps.style"
+									@click="slotProps.onClick"
+								/>
+							</template>
+						</Image>
 					</div>
 				</div>
 				<div class="flex flex-col">
 					<label for="">Tiempo para liberar cupos:</label>
 					<InputGroup class="h-8 text-sm">
-						<InputNumber type="number" showButtons :min="2" :max="15" />
+						<InputNumber
+							type="number"
+							showButtons
+							:min="2"
+							:max="15"
+							v-model="configuracion.tiempoEspera"
+						/>
 						<InputGroupAddon>min.</InputGroupAddon>
 					</InputGroup>
 				</div>
 			</div>
 			<template #footer>
-				<Button label="Cancelar" text />
-				<Button label="Guardar" />
+				<Button label="Cerrar" text @click="visible = false" />
+				<Button
+					label="Guardar"
+					@click="actualizarConfiguracion"
+					:loading="loading"
+				/>
 			</template>
 		</Dialog>
 	</main>
 </template>
 
 <script setup>
-import FileUpload from 'primevue/fileupload'
-import { ref } from 'vue'
-const toggleTheme = () => {
-	const theme = document.querySelector('html')
-	theme.classList.toggle('dark-mode')
-	const icon = document.querySelector('.pi')
-	icon.classList.toggle('pi-moon')
-	icon.classList.toggle('pi-sun')
-}
+import { ref, watch } from 'vue'
+import { useConfiguraciones } from './composables/useConfiguraciones'
+import { useEventos } from './composables/useEventos'
+
+const { itemsReservas } = useEventos()
+const { configuracion, loading, cargarConfiguracion, actualizarConfiguracion } =
+	useConfiguraciones()
 
 const visible = ref(false)
 
+const onUpload = (event) => {
+	const file = event.files[0]
+	const reader = new FileReader()
+
+	reader.onload = async (e) => {
+		configuracion.value.qrPago = e.target.result
+	}
+
+	reader.readAsDataURL(file)
+}
+
 const items = ref([
-	{
-		label: 'Reservas',
-		icon: 'pi pi-book',
-		route: '/',
-	},
 	{
 		label: 'Eventos',
 		icon: 'pi pi-star',
 		route: '/eventos',
 	},
+	{
+		label: 'Reservas',
+		icon: 'pi pi-book',
+		items: [],
+	},
+
 	{
 		label: 'Programaciones',
 		icon: 'pi pi-calendar',
@@ -122,10 +149,15 @@ const items = ref([
 	{
 		label: 'Configuraciones',
 		icon: 'pi pi-cog',
-		command: () => {
+		command: async () => {
+			await cargarConfiguracion()
 			visible.value = true
 		},
 	},
 ])
+
+watch(itemsReservas, (value) => {
+	items.value[1].items = value
+})
 </script>
 <style scoped></style>

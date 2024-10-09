@@ -17,23 +17,11 @@ export const useEventoStore = defineStore('evento', {
 			},
 			interactividad: {
 				loading: false,
+				action: false,
 				visible: false,
 				visibleProgramacion: false,
 			},
+			itemsReservas: [],
 		}
-	},
-	actions: {
-		resetEventoSelected() {
-			this.eventoSelected = {
-				identificador: crypto.randomUUID(),
-				nombre: '',
-				descripcion: '',
-				duracion: 0,
-				capacidad: 0,
-				precios: [],
-				diasNoActivo: [],
-				activo: false,
-			}
-		},
 	},
 })

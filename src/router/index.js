@@ -1,14 +1,19 @@
-import { createRouter, createMemoryHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 import ReservasView from '@/pages/ReservasView.vue'
 
 const routes = [
 	{
 		path: '/',
-		redirect: '/reservas/pendientes',
+		redirect: '/eventos',
 	},
 	{
-		path: '/reservas',
+		path: '/eventos',
+		name: 'Eventos',
+		component: () => import('@/pages/EventosView.vue'),
+	},
+	{
+		path: '/reservas/:idEvento',
 		name: 'Reservas',
 		component: ReservasView,
 		children: [
@@ -24,15 +29,10 @@ const routes = [
 			},
 		],
 	},
-	{
-		path: '/eventos',
-		name: 'Eventos',
-		component: () => import('@/pages/EventosView.vue'),
-	},
 ]
 
 const router = createRouter({
-	history: createMemoryHistory(),
+	history: createWebHistory(),
 	routes,
 })
 

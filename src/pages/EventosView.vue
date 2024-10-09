@@ -8,12 +8,31 @@
 				class="p-0 m-0"
 				size="small"
 				v-tooltip="'Crear nuevo evento'"
-				@click="actionCrearEvento"
+				@click="actionCrearEvento()"
 			/>
 		</div>
 		<Divider class="mt-2 mb-6" />
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+			<template v-if="interactividad.action">
+				<div
+					class="rounded-2xl border border-surface-200 p-6 bg-surface-0"
+					v-for="index in 3"
+					:key="index"
+				>
+					<div class="flex mb-4">
+						<div>
+							<Skeleton width="10rem" height="1rem" class="mb-4"></Skeleton>
+						</div>
+					</div>
+					<Skeleton width="100%" height="70px"></Skeleton>
+					<div class="flex flex-col gap-2 mt-2">
+						<Skeleton width="4rem" height="2rem"></Skeleton>
+						<Skeleton width="4rem" height="2rem"></Skeleton>
+					</div>
+				</div>
+			</template>
 			<Card
+				v-else
 				style="overflow: hidden"
 				v-for="el in eventos"
 				:key="el.identificador"
@@ -144,8 +163,8 @@
 			<div class="flex flex-wrap gap-2">
 				<label class="w-full">Días que el evento no estara activo:</label>
 				<div
-					v-for="dia of semana"
-					:key="dia.value"
+					v-for="(dia, index) of semana"
+					:key="index"
 					class="flex items-center gap-1"
 				>
 					<Checkbox
@@ -258,7 +277,7 @@ const toast = useToast()
 const confirm = useConfirm()
 const op = ref()
 const update = ref(false)
-const selectedId = ref()
+const selectedId = ref('')
 const precio = ref({
 	tipo: '',
 	precio: 0,
@@ -354,6 +373,7 @@ const generarProgramacion = async () => {
 	interactividad.value.loading = false
 	interactividad.value.visibleProgramacion = false
 }
+
 cargarEventos()
 </script>
 <style scoped></style>
