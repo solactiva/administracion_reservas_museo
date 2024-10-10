@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import ReservasView from '@/pages/ReservasView.vue'
-
 const routes = [
 	{
 		path: '/',
@@ -15,7 +13,7 @@ const routes = [
 	{
 		path: '/reservas/:idEvento',
 		name: 'Reservas',
-		component: ReservasView,
+		component: () => import('@/pages/ReservasView.vue'),
 		children: [
 			{
 				path: 'pendientes',
@@ -28,6 +26,11 @@ const routes = [
 				component: () => import('@/pages/ConfirmadosPage.vue'),
 			},
 		],
+	},
+	{
+		path: '/programaciones',
+		name: 'Programaciones',
+		component: () => import('@/pages/ProgramacionesView.vue'),
 	},
 ]
 

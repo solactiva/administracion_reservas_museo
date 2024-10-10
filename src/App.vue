@@ -145,6 +145,7 @@ const items = ref([
 	{
 		label: 'Programaciones',
 		icon: 'pi pi-calendar',
+		route: '/programaciones',
 	},
 	{
 		label: 'Configuraciones',

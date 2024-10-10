@@ -10,9 +10,7 @@
 							v-model="fechaSeleccionada"
 							:disabled-days="evento?.diasNoActivo"
 							:minDate="new Date()"
-							@update:model-value="
-								actualizarHorarios(fechaSeleccionada, evento?.identificador)
-							"
+							@update:modelValue="actualizarHorarios"
 						/>
 					</div>
 					<div class="grid grid-cols-2 gap-4 justify-center" v-if="action">
@@ -275,7 +273,7 @@
 			</div>
 		</template>
 	</Dialog>
-	<Tabs :value="`/pendientes`">
+	<Tabs :value="`${idEvento.value}/pendientes`">
 		<TabList>
 			<Tab v-for="(tab, index) in items" :key="index" :value="tab.route">
 				<router-link v-slot="{ href, navigate }" :to="tab.route" custom>
@@ -325,6 +323,36 @@ const {
 const fechaSeleccionada = ref(new Date())
 const visible = ref(false)
 
+const idEvento = computed(() => ruta.params.idEvento)
+
+const actualizarHorarios = async () => {
+	await cargarHorarios(fechaSeleccionada.value, idEvento.value)
+}
+
+const items = computed(() => [
+	{
+		route: `/reservas/${idEvento.value}/pendientes`,
+		label: 'Pendientes',
+		icon: 'pi pi-hourglass',
+	},
+	{
+		route: `/reservas/${idEvento.value}/confirmados`,
+		label: 'Confirmados',
+		icon: 'pi pi-check-square',
+	},
+])
+
+watch(
+	idEvento,
+	async (nuevoId, antiguoId) => {
+		if (nuevoId !== antiguoId) {
+			await cargarEvento(nuevoId)
+			await actualizarHorarios()
+		}
+	},
+	{ immediate: true }
+)
+
 const registrarDatosReserva = (idProg) => {
 	reserva.value.cantidad = evento.value.precios.map((pago) => ({
 		tipo: pago.tipo,
@@ -338,45 +366,6 @@ const registrarDatosReserva = (idProg) => {
 		(horario) => horario.identificador === idProg
 	)
 	visible.value = true
-}
-
-/* const items = ref([
-	{
-		route: `${idEvento.value}/pendientes`,
-		label: 'Pendientes',
-		icon: 'pi pi-hourglass',
-	},
-	{
-		route: `${idEvento.value}/confirmados`,
-		label: 'Confirmados',
-		icon: 'pi pi-check-square',
-	},
-]) */
-const items = computed(() => [
-	{
-		route: `/reservas/${ruta.params.idEvento}/pendientes`,
-		label: 'Pendientes',
-		icon: 'pi pi-hourglass',
-	},
-	{
-		route: `/reservas/${ruta.params.idEvento}/confirmados`,
-		label: 'Confirmados',
-		icon: 'pi pi-check-square',
-	},
-])
-
-const idEvento = computed(() => ruta.params.idEvento)
-cargarEvento(idEvento.value)
-cargarHorarios(fechaSeleccionada.value, idEvento.value)
-
-watch(idEvento, async () => {
-	console.log('cambio')
-	await cargarEvento(idEvento.value)
-	await cargarHorarios(fechaSeleccionada.value, idEvento.value)
-})
-
-const actualizarHorarios = async (fecha, idEvento) => {
-	await cargarHorarios(fecha, idEvento)
 }
 
 const selectedCountry = ref({
