@@ -1,7 +1,15 @@
-import { postMassiveProgramacion } from '@/services/programacionesService'
+import { storeToRefs } from 'pinia'
+import {
+	postMassiveProgramacion,
+	getProgramacionesCalendar,
+} from '@/services/programacionesService'
+import { useProgramacionStore } from '@/stores/programacionStore'
 import { useToast } from 'primevue/usetoast'
 
 export const useProgramaciones = () => {
+	const programacionStore = useProgramacionStore()
+	const { programaciones, interactividad } = storeToRefs(programacionStore)
+
 	const toast = useToast()
 	const crearProgramaciones = async (datosHorarios, datosEvento) => {
 		const evento = datosEvento
@@ -44,6 +52,24 @@ export const useProgramaciones = () => {
 				severity: 'error',
 				summary: 'Error al crear',
 				detail: 'Ocurrio un error al crear, comuniquese con el administrador',
+				life: 5000,
+			})
+		}
+	}
+
+	const cargarProgramaciones = async () => {
+		interactividad.value.action = true
+		const response = await getProgramacionesCalendar()
+		interactividad.value.action = false
+		if (response.success) {
+			programaciones.value = response.data
+			console.log('Programaciones cargadas')
+		} else {
+			toast.add({
+				severity: 'error',
+				summary: 'Error al cargar',
+				detail:
+					'Ocurrio un error al cargar las programaciones, comuniquese con el administrador',
 				life: 5000,
 			})
 		}
@@ -127,5 +153,10 @@ export const useProgramaciones = () => {
 		return programaciones
 	}
 
-	return { crearProgramaciones }
+	return {
+		programaciones,
+		interactividad,
+		crearProgramaciones,
+		cargarProgramaciones,
+	}
 }
