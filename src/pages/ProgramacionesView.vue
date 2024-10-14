@@ -9,12 +9,28 @@
 	<div v-else>
 		<ScheduleXCalendar v-if="calendarApp" :calendar-app="calendarApp" />
 	</div>
+	<Dialog
+		v-model:visible="visible"
+		modal
+		header="Header"
+		:style="{ width: '50vw' }"
+		:breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+	>
+		<p class="m-0">
+			Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+			tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+			veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+			commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+			velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+			cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id
+			est laborum.
+		</p>
+	</Dialog>
 </template>
 
 <script setup>
 import { createEventsServicePlugin } from '@schedule-x/events-service'
 import { createDragAndDropPlugin } from '@schedule-x/drag-and-drop'
-import { createResizePlugin } from '@schedule-x/resize'
 import { ScheduleXCalendar } from '@schedule-x/vue'
 import {
 	createCalendar,
@@ -25,10 +41,38 @@ import {
 } from '@schedule-x/calendar'
 import '@schedule-x/theme-default/dist/index.css'
 import { useProgramaciones } from '@/composables/useProgramaciones'
-import { onMounted, watch } from 'vue'
+import { onMounted, watch, ref } from 'vue'
+import { format } from '@formkit/tempo'
+import { useConfirm } from 'primevue/useconfirm'
 
-const { programaciones, interactividad, cargarProgramaciones } =
-	useProgramaciones()
+const confirm = useConfirm()
+const visible = ref(false)
+
+const confirmDrop = (event) => {
+	const eventDrag = programaciones.value.find((el) => el.id === event.id)
+	confirm.require({
+		message: '¿Estás seguro de que deseas mover este evento?',
+		header: 'Confirmar',
+		icon: 'pi pi-exclamation-triangle',
+		accept: async () => {
+			console.log('Evento movido')
+			await actualizarUpdateDrop(event)
+		},
+		reject: () => {
+			console.log('Movimiento cancelado')
+			console.log('Evento original', eventDrag)
+
+			eventsServicePlugin.update(eventDrag)
+		},
+	})
+}
+
+const {
+	programaciones,
+	interactividad,
+	cargarProgramaciones,
+	actualizarUpdateDrop,
+} = useProgramaciones()
 
 const eventsServicePlugin = createEventsServicePlugin()
 const calendarApp = createCalendar(
@@ -69,11 +113,24 @@ const calendarApp = createCalendar(
 		},
 		isResponsive: true,
 		callbacks: {
+			onEventUpdate(updatedEvent) {
+				confirmDrop(updatedEvent)
+			},
 			onEventClick(calendarEvent) {
 				console.log('onEventClick', calendarEvent)
+				visible.value = true
+			},
+			onDoubleClickDateTime(dateTime) {
+				console.log('onEventClick', dateTime)
 			},
 		},
-		selectedDate: '2024-10-11',
+		selectedDate: format(new Date(), 'YYYY-MM-DD'),
+		weekOptions: {
+			gridHeight: 750,
+		},
+		monthGridOptions: {
+			nEventsPerDay: 3,
+		},
 		views: [
 			createViewDay(),
 			createViewWeek(),
@@ -82,7 +139,7 @@ const calendarApp = createCalendar(
 		],
 		events: [],
 	},
-	[createDragAndDropPlugin(), createResizePlugin(), eventsServicePlugin]
+	[eventsServicePlugin, createDragAndDropPlugin()]
 )
 
 onMounted(async () => {
@@ -93,6 +150,7 @@ onMounted(async () => {
 watch(
 	programaciones,
 	(newProgramaciones) => {
+		console.log('New Fetched Programaciones')
 		eventsServicePlugin.set(newProgramaciones)
 	},
 	{ deep: true }

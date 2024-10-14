@@ -10,6 +10,16 @@ export const useProgramacionStore = defineStore('programacion', {
 				loading: false,
 				visible: false,
 			},
+			programacionSeleccionada: {},
 		}
+	},
+	actions: {
+		updateDrop(payload) {
+			const { id, start, end } = payload
+			const evento = this.programaciones.find((evento) => evento.id === id)
+
+			evento.start = start
+			evento.end = end
+		},
 	},
 })

@@ -2,6 +2,9 @@ import { storeToRefs } from 'pinia'
 import {
 	postMassiveProgramacion,
 	getProgramacionesCalendar,
+	getProgramacion,
+	putProgramacion,
+	deleteProgramacion,
 } from '@/services/programacionesService'
 import { useProgramacionStore } from '@/stores/programacionStore'
 import { useToast } from 'primevue/usetoast'
@@ -43,7 +46,7 @@ export const useProgramaciones = () => {
 		if (response.success) {
 			toast.add({
 				severity: 'success',
-				summary: response.message,
+				summary: 'Creado',
 				detail: response.message,
 				life: 3000,
 			})
@@ -70,6 +73,35 @@ export const useProgramaciones = () => {
 				summary: 'Error al cargar',
 				detail:
 					'Ocurrio un error al cargar las programaciones, comuniquese con el administrador',
+				life: 5000,
+			})
+		}
+	}
+
+	const actualizarUpdateDrop = async (evento) => {
+		const { id, start, end } = evento
+		const payload = {
+			identificador: id,
+			inicioEvento: start.split(' ')[1],
+			finEvento: end.split(' ')[1],
+			fecha: start.split(' ')[0],
+		}
+
+		const response = await putProgramacion(payload)
+		if (response.success) {
+			programacionStore.updateDrop(evento)
+			toast.add({
+				severity: 'success',
+				summary: 'Actualizado',
+				detail: response.message,
+				life: 3000,
+			})
+		} else {
+			toast.add({
+				severity: 'error',
+				summary: 'Error al actualizar',
+				detail:
+					'Ocurrio un error al actualizar, comuniquese con el administrador',
 				life: 5000,
 			})
 		}
@@ -158,5 +190,6 @@ export const useProgramaciones = () => {
 		interactividad,
 		crearProgramaciones,
 		cargarProgramaciones,
+		actualizarUpdateDrop,
 	}
 }
