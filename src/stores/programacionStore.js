@@ -10,7 +10,16 @@ export const useProgramacionStore = defineStore('programacion', {
 				loading: false,
 				visible: false,
 			},
-			programacionSeleccionada: {},
+			programacionSeleccionada: {
+				identificador: crypto.randomUUID(),
+				fecha: '',
+				inicioEvento: '',
+				evento: {},
+				reservas: [],
+				spots: 20,
+				finEvento: '',
+				activo: true,
+			},
 		}
 	},
 	actions: {

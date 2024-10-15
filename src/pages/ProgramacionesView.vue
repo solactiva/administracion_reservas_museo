@@ -7,46 +7,84 @@
 		<ProgressSpinner />
 	</div>
 	<div v-else>
-		<ScheduleXCalendar v-if="calendarApp" :calendar-app="calendarApp" />
+		<ScheduleXCalendar :calendar-app="calendarApp" />
 	</div>
 	<Dialog
 		v-model:visible="visible"
 		modal
-		header="Header"
-		:style="{ width: '50vw' }"
-		:breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+		:pt="{
+			root: 'w-11/12 md:w-9/12 lg:w-6/12',
+		}"
 	>
-		<p class="m-0">
-			Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-			tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-			veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-			commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-			velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-			cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id
-			est laborum.
+		<template #header>
+			<div class="flex items-center">
+				<h3 class="text-xl font-semibold mr-3">
+					{{
+						interactividad.loading
+							? ''
+							: programacionSeleccionada.evento?.nombre
+					}}
+				</h3>
+				<Button
+					v-if="updatedEvento"
+					label="Eliminar"
+					icon="pi pi-trash"
+					text
+					severity="danger"
+					size="small"
+					rounded
+				/>
+			</div>
+		</template>
+		<div class="flex justify-center" v-if="interactividad.loading">
+			<ProgressSpinner
+				style="width: 50px; height: 50px"
+				strokeWidth="8"
+				fill="transparent"
+				animationDuration=".5s"
+				aria-label="Custom ProgressSpinner"
+			/>
+		</div>
+		<p class="m-0" v-else>
+			{{ programacionSeleccionada.evento?.descripcion }}
 		</p>
+		<template #footer>
+			<div class="flex justify-between gap-2">
+				<Button
+					label="Cancelar"
+					severity="primary"
+					text=""
+					@click="() => (visible = false)"
+				/>
+				<Button label="Aceptar" severity="primary" />
+			</div>
+		</template>
 	</Dialog>
 </template>
 
 <script setup>
 import { createEventsServicePlugin } from '@schedule-x/events-service'
 import { createDragAndDropPlugin } from '@schedule-x/drag-and-drop'
+import { createCalendarControlsPlugin } from '@schedule-x/calendar-controls'
 import { ScheduleXCalendar } from '@schedule-x/vue'
 import {
 	createCalendar,
-	createViewDay,
-	createViewMonthAgenda,
-	createViewMonthGrid,
-	createViewWeek,
+	viewDay,
+	viewMonthAgenda,
+	viewMonthGrid,
+	viewWeek,
 } from '@schedule-x/calendar'
 import '@schedule-x/theme-default/dist/index.css'
 import { useProgramaciones } from '@/composables/useProgramaciones'
-import { onMounted, watch, ref } from 'vue'
+import { watch, ref, shallowRef } from 'vue'
 import { format } from '@formkit/tempo'
 import { useConfirm } from 'primevue/useconfirm'
+import { useDialog } from 'primevue/usedialog'
 
 const confirm = useConfirm()
+const dialog = useDialog()
 const visible = ref(false)
+const updatedEvento = ref(false)
 
 const confirmDrop = (event) => {
 	const eventDrag = programaciones.value.find((el) => el.id === event.id)
@@ -55,28 +93,33 @@ const confirmDrop = (event) => {
 		header: 'Confirmar',
 		icon: 'pi pi-exclamation-triangle',
 		accept: async () => {
-			console.log('Evento movido')
 			await actualizarUpdateDrop(event)
 		},
 		reject: () => {
-			console.log('Movimiento cancelado')
-			console.log('Evento original', eventDrag)
-
 			eventsServicePlugin.update(eventDrag)
 		},
 	})
 }
 
+const showProgramacion = () => {}
+
 const {
 	programaciones,
 	interactividad,
+	programacionSeleccionada,
 	cargarProgramaciones,
+	cargarProgramacion,
 	actualizarUpdateDrop,
 } = useProgramaciones()
 
 const eventsServicePlugin = createEventsServicePlugin()
-const calendarApp = createCalendar(
-	{
+const calendarControlsPlugin = createCalendarControlsPlugin()
+const calendarApp = shallowRef(
+	createCalendar({
+		selectedDate: format(new Date(), 'YYYY-MM-DD'),
+		locale: 'es-ES',
+		views: [viewDay, viewWeek, viewMonthGrid, viewMonthAgenda],
+		defaultView: viewWeek.name,
 		calendars: {
 			'd999971a-613f-4093-9361-9213f819d011': {
 				colorName: 'normal',
@@ -105,7 +148,11 @@ const calendarApp = createCalendar(
 				},
 			},
 		},
-		locale: 'es-ES',
+		plugins: [
+			eventsServicePlugin,
+			createDragAndDropPlugin(),
+			calendarControlsPlugin,
+		],
 		firstDayOfWeek: 0,
 		dayBoundaries: {
 			start: '07:00',
@@ -117,40 +164,31 @@ const calendarApp = createCalendar(
 				confirmDrop(updatedEvent)
 			},
 			onEventClick(calendarEvent) {
-				console.log('onEventClick', calendarEvent)
 				visible.value = true
+				updatedEvento.value = true
+				cargarProgramacion(calendarEvent.id)
 			},
 			onDoubleClickDateTime(dateTime) {
 				console.log('onEventClick', dateTime)
 			},
 		},
-		selectedDate: format(new Date(), 'YYYY-MM-DD'),
 		weekOptions: {
 			gridHeight: 750,
 		},
 		monthGridOptions: {
 			nEventsPerDay: 3,
 		},
-		views: [
-			createViewDay(),
-			createViewWeek(),
-			createViewMonthGrid(),
-			createViewMonthAgenda(),
-		],
 		events: [],
-	},
-	[eventsServicePlugin, createDragAndDropPlugin()]
+	})
 )
 
-onMounted(async () => {
-	await cargarProgramaciones()
+cargarProgramaciones().then(() => {
 	eventsServicePlugin.set(programaciones.value)
 })
 
 watch(
 	programaciones,
 	(newProgramaciones) => {
-		console.log('New Fetched Programaciones')
 		eventsServicePlugin.set(newProgramaciones)
 	},
 	{ deep: true }

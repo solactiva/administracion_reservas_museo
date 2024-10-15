@@ -11,7 +11,8 @@ import { useToast } from 'primevue/usetoast'
 
 export const useProgramaciones = () => {
 	const programacionStore = useProgramacionStore()
-	const { programaciones, interactividad } = storeToRefs(programacionStore)
+	const { programaciones, interactividad, programacionSeleccionada } =
+		storeToRefs(programacionStore)
 
 	const toast = useToast()
 	const crearProgramaciones = async (datosHorarios, datosEvento) => {
@@ -66,7 +67,6 @@ export const useProgramaciones = () => {
 		interactividad.value.action = false
 		if (response.success) {
 			programaciones.value = response.data
-			console.log('Programaciones cargadas')
 		} else {
 			toast.add({
 				severity: 'error',
@@ -102,6 +102,23 @@ export const useProgramaciones = () => {
 				summary: 'Error al actualizar',
 				detail:
 					'Ocurrio un error al actualizar, comuniquese con el administrador',
+				life: 5000,
+			})
+		}
+	}
+
+	const cargarProgramacion = async (id) => {
+		interactividad.value.loading = true
+		const response = await getProgramacion(id)
+		interactividad.value.loading = false
+		if (response.success) {
+			programacionSeleccionada.value = response.data
+		} else {
+			toast.add({
+				severity: 'error',
+				summary: 'Error al cargar',
+				detail:
+					'Ocurrio un error al cargar la programación, comuniquese con el administrador',
 				life: 5000,
 			})
 		}
@@ -188,8 +205,10 @@ export const useProgramaciones = () => {
 	return {
 		programaciones,
 		interactividad,
+		programacionSeleccionada,
 		crearProgramaciones,
 		cargarProgramaciones,
+		cargarProgramacion,
 		actualizarUpdateDrop,
 	}
 }
