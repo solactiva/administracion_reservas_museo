@@ -124,6 +124,27 @@ export const useProgramaciones = () => {
 		}
 	}
 
+	const eliminarProgramacion = async (id) => {
+		const response = await deleteProgramacion(id)
+		if (response.success) {
+			programacionStore.deleteProgramacion(id)
+			toast.add({
+				severity: 'success',
+				summary: 'Eliminado',
+				detail: response.message,
+				life: 3000,
+			})
+		} else {
+			toast.add({
+				severity: 'error',
+				summary: 'Error al eliminar',
+				detail: response.message,
+				life: 5000,
+			})
+			console.error(response)
+		}
+	}
+
 	function addMinutes(time, minutes) {
 		const [hours, mins] = time.split(':').map(Number)
 		const date = new Date(Date.UTC(2000, 0, 1, hours, mins + minutes))
@@ -210,5 +231,6 @@ export const useProgramaciones = () => {
 		cargarProgramaciones,
 		cargarProgramacion,
 		actualizarUpdateDrop,
+		eliminarProgramacion,
 	}
 }

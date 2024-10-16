@@ -30,5 +30,10 @@ export const useProgramacionStore = defineStore('programacion', {
 			evento.start = start
 			evento.end = end
 		},
+		deleteProgramacion(id) {
+			this.programaciones = this.programaciones.filter(
+				(programacion) => programacion.id !== id
+			)
+		},
 	},
 })

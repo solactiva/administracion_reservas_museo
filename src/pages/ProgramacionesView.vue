@@ -9,57 +9,7 @@
 	<div v-else>
 		<ScheduleXCalendar :calendar-app="calendarApp" />
 	</div>
-	<Dialog
-		v-model:visible="visible"
-		modal
-		:pt="{
-			root: 'w-11/12 md:w-9/12 lg:w-6/12',
-		}"
-	>
-		<template #header>
-			<div class="flex items-center">
-				<h3 class="text-xl font-semibold mr-3">
-					{{
-						interactividad.loading
-							? ''
-							: programacionSeleccionada.evento?.nombre
-					}}
-				</h3>
-				<Button
-					v-if="updatedEvento"
-					label="Eliminar"
-					icon="pi pi-trash"
-					text
-					severity="danger"
-					size="small"
-					rounded
-				/>
-			</div>
-		</template>
-		<div class="flex justify-center" v-if="interactividad.loading">
-			<ProgressSpinner
-				style="width: 50px; height: 50px"
-				strokeWidth="8"
-				fill="transparent"
-				animationDuration=".5s"
-				aria-label="Custom ProgressSpinner"
-			/>
-		</div>
-		<p class="m-0" v-else>
-			{{ programacionSeleccionada.evento?.descripcion }}
-		</p>
-		<template #footer>
-			<div class="flex justify-between gap-2">
-				<Button
-					label="Cancelar"
-					severity="primary"
-					text=""
-					@click="() => (visible = false)"
-				/>
-				<Button label="Aceptar" severity="primary" />
-			</div>
-		</template>
-	</Dialog>
+	<DynamicDialog />
 </template>
 
 <script setup>
@@ -76,15 +26,20 @@ import {
 } from '@schedule-x/calendar'
 import '@schedule-x/theme-default/dist/index.css'
 import { useProgramaciones } from '@/composables/useProgramaciones'
-import { watch, ref, shallowRef } from 'vue'
+import { watch, shallowRef, markRaw, defineAsyncComponent } from 'vue'
 import { format } from '@formkit/tempo'
 import { useConfirm } from 'primevue/useconfirm'
 import { useDialog } from 'primevue/usedialog'
 
+const FormularioProgramacion = defineAsyncComponent(() =>
+	import('@/components/FormularioProgramacion.vue')
+)
+const HeaderFormulario = defineAsyncComponent(() =>
+	import('@/components/HeaderFormulario.vue')
+)
+
 const confirm = useConfirm()
 const dialog = useDialog()
-const visible = ref(false)
-const updatedEvento = ref(false)
 
 const confirmDrop = (event) => {
 	const eventDrag = programaciones.value.find((el) => el.id === event.id)
@@ -92,6 +47,13 @@ const confirmDrop = (event) => {
 		message: '¿Estás seguro de que deseas mover este evento?',
 		header: 'Confirmar',
 		icon: 'pi pi-exclamation-triangle',
+		acceptProps: { label: 'Sí', icon: 'pi pi-check', size: 'small' },
+		rejectProps: {
+			label: 'No',
+			icon: 'pi pi-times',
+			size: 'small',
+			text: true,
+		},
 		accept: async () => {
 			await actualizarUpdateDrop(event)
 		},
@@ -101,12 +63,26 @@ const confirmDrop = (event) => {
 	})
 }
 
-const showProgramacion = () => {}
+const showProgramacion = async (id) => {
+	// eslint-disable-next-line no-unused-vars
+	const dialogRef = dialog.open(FormularioProgramacion, {
+		props: {
+			breakpoints: {
+				'960px': '75vw',
+				'640px': '90vw',
+			},
+			modal: true,
+		},
+		templates: {
+			header: markRaw(HeaderFormulario),
+		},
+	})
+	await cargarProgramacion(id)
+}
 
 const {
 	programaciones,
 	interactividad,
-	programacionSeleccionada,
 	cargarProgramaciones,
 	cargarProgramacion,
 	actualizarUpdateDrop,
@@ -164,9 +140,7 @@ const calendarApp = shallowRef(
 				confirmDrop(updatedEvent)
 			},
 			onEventClick(calendarEvent) {
-				visible.value = true
-				updatedEvento.value = true
-				cargarProgramacion(calendarEvent.id)
+				showProgramacion(calendarEvent.id)
 			},
 			onDoubleClickDateTime(dateTime) {
 				console.log('onEventClick', dateTime)

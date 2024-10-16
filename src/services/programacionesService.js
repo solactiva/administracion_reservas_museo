@@ -36,9 +36,7 @@ export const putProgramacion = async (programacion) => {
 
 export const deleteProgramacion = async (id) => {
 	try {
-		const res = await axios.delete(
-			`/63646b30-3fbb-4b02-b434-5fc89c87dbde/programaciones/${id}`
-		)
+		const res = await axios.delete(`/programaciones?idProgramacion=${id}`)
 		return res.data
 	} catch (error) {
 		console.error(error)
