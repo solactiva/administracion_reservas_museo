@@ -1,5 +1,5 @@
 <template>
-	<main class="container mx-auto px-4 lg:px-36 py-0">
+	<main class="container mx-auto px-5 py-0">
 		<Toast position="top-center" :pt="{ root: 'w-11/12 md:w-2/5' }" />
 		<ConfirmDialog></ConfirmDialog>
 		<Menubar :model="items">
@@ -31,6 +31,16 @@
 					<span class="ml-2">{{ item.label }}</span>
 					<span v-if="hasSubmenu" class="pi pi-fw pi-angle-down ml-2" />
 				</a>
+			</template>
+			<template #end>
+				<div class="flex items-center">
+					<Button
+						label="Cerrar Sesión"
+						icon="pi pi-sign-out"
+						text
+						@click="logout"
+					/>
+				</div>
 			</template>
 		</Menubar>
 		<Suspense>
@@ -112,7 +122,9 @@
 import { ref, watch } from 'vue'
 import { useConfiguraciones } from '@/composables/useConfiguraciones'
 import { useEventos } from '@/composables/useEventos'
+import { useAuth } from '@/composables/useAuth'
 
+const { logout } = useAuth()
 const { itemsReservas } = useEventos()
 const { configuracion, loading, cargarConfiguracion, actualizarConfiguracion } =
 	useConfiguraciones()
