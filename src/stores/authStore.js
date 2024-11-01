@@ -24,7 +24,7 @@ export const useAuthStore = defineStore('auth', {
 		logoutAuth() {
 			this.isLogin = false
 			this.loginForm = {
-				email: '',
+				username: '',
 				password: '',
 			}
 			this.router.push('/login')

@@ -6,7 +6,10 @@ const routes = [
 	{
 		path: '/',
 		name: 'Home',
-		meta: { requiresAuth: true },
+		meta: {
+			requiresAuth: true,
+			title: 'Administrador de Reservas',
+		},
 		component: () => import('@/pages/HomePage.vue'),
 		redirect: '/eventos',
 		children: [
@@ -44,6 +47,11 @@ const routes = [
 		name: 'Login',
 		component: () => import('@/pages/LoginPage.vue'),
 	},
+	{
+		path: '/:pathMatch(.*)*',
+		name: 'NotFound',
+		component: () => import('@/pages/NotFoundPage.vue'),
+	},
 ]
 
 const router = createRouter({
@@ -56,6 +64,10 @@ router.beforeEach(async (to, from, next) => {
 	let isLogin = authStore.isLogin
 	const isToken = localStorage.getItem('token')
 	const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
+
+	if (to.meta.title) {
+		document.title = to.meta.title
+	}
 
 	if (requiresAuth) {
 		if (!isToken) {

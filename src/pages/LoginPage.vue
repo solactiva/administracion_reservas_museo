@@ -7,7 +7,7 @@
 				<div class="text-surface-900 text-3xl font-medium mb-4">Bienvenido</div>
 			</div>
 
-			<div>
+			<form @submit.prevent="login">
 				<label for="usuario" class="text-surface-900 font-medium mb-2 block"
 					>Usuario</label
 				>
@@ -48,10 +48,10 @@
 					label="Iniciar Sesión"
 					icon="pi pi-user"
 					class="w-full"
-					@click="login"
+					:type="submit"
 					:loading="actionState"
 				/>
-			</div>
+			</form>
 		</div>
 	</div>
 </template>

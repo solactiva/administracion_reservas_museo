@@ -34,23 +34,25 @@
 			</template>
 			<template #end>
 				<div class="flex items-center">
-					<Button
-						label="Cerrar Sesión"
-						icon="pi pi-sign-out"
-						text
-						@click="logout"
-					/>
+					<Button icon="pi pi-user" @click="userMenu" rounded="full" text />
+
+					<Menu ref="menu" id="overlay_menu" :model="userItems" :popup="true" />
 				</div>
 			</template>
 		</Menubar>
-		<Suspense>
-			<template #default>
-				<RouterView />
-			</template>
-			<template #fallback>
-				<ProgressSpinner />
-			</template>
-		</Suspense>
+		<router-view v-slot="{ Component, route }">
+			<Transition name="fade" mode="out-in">
+				<div :key="route.name">
+					<Suspense>
+						<component :is="Component" />
+						<template #fallback>
+							<ProgressSpinner />
+						</template>
+					</Suspense>
+				</div>
+			</Transition>
+		</router-view>
+
 		<Dialog v-model:visible="visible" modal header="Configuraciones Generales">
 			<div class="flex flex-col gap-4">
 				<div class="grid grid-cols-2 gap-4">
@@ -123,6 +125,7 @@ import { ref, watch } from 'vue'
 import { useConfiguraciones } from '@/composables/useConfiguraciones'
 import { useEventos } from '@/composables/useEventos'
 import { useAuth } from '@/composables/useAuth'
+import router from '@/router'
 
 const { logout } = useAuth()
 const { itemsReservas } = useEventos()
@@ -130,6 +133,30 @@ const { configuracion, loading, cargarConfiguracion, actualizarConfiguracion } =
 	useConfiguraciones()
 
 const visible = ref(false)
+const menu = ref()
+const userItems = ref([
+	{
+		label: 'Opciones',
+		items: [
+			{
+				label: 'Perfil',
+				icon: 'pi pi-user',
+			},
+			{
+				label: 'Cerrar Sesión',
+				icon: 'pi pi-sign-out',
+				shortcut: '⌘+Q',
+				command: () => {
+					logout()
+				},
+			},
+		],
+	},
+])
+
+const userMenu = (event) => {
+	menu.value.toggle(event)
+}
 
 const onUpload = (event) => {
 	const file = event.files[0]
