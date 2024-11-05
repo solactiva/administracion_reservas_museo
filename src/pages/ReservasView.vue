@@ -273,7 +273,7 @@
 			</div>
 		</template>
 	</Dialog>
-	<Tabs :value="`${idEvento.value}/pendientes`">
+	<Tabs :value="`/reservas/${$route.params.idEvento}/pendientes`">
 		<TabList>
 			<Tab v-for="(tab, index) in items" :key="index" :value="tab.route">
 				<router-link v-slot="{ href, navigate }" :to="tab.route" custom>

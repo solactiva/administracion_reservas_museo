@@ -1,17 +1,15 @@
 <template>
-	<div class="container py-4 mx-auto">
-		<div class="flex">
-			<h1 class="text-xl font-bold text-primary-300 px-3">Eventos</h1>
+	<div class="container my-5 mx-auto">
+		<div class="flex flex-row gap-2 mb-4">
+			<h1 class="text-xl text-primary font-bold">Eventos</h1>
 			<Button
 				icon="pi pi-plus"
-				text
-				class="p-0 m-0"
+				variant="text"
 				size="small"
 				v-tooltip="'Crear nuevo evento'"
 				@click="actionCrearEvento()"
 			/>
 		</div>
-		<Divider class="mt-2 mb-6" />
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 			<template v-if="interactividad.action">
 				<div

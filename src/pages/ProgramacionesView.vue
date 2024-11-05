@@ -9,7 +9,6 @@
 	<div v-else>
 		<ScheduleXCalendar :calendar-app="calendarApp" />
 	</div>
-	<DynamicDialog />
 </template>
 
 <script setup>

@@ -2,6 +2,7 @@
 	<main class="container mx-auto px-5 py-0">
 		<Toast position="top-center" :pt="{ root: 'w-11/12 md:w-2/5' }" />
 		<ConfirmDialog></ConfirmDialog>
+		<DynamicDialog />
 		<Menubar :model="items">
 			<template #start>
 				<h1 class="text-lg font-bold text-primary">
@@ -34,13 +35,20 @@
 			</template>
 			<template #end>
 				<div class="flex items-center">
-					<Button icon="pi pi-user" @click="userMenu" rounded="full" text />
+					<Button
+						icon="pi pi-user"
+						@click="userMenu"
+						rounded="full"
+						severity="contrast"
+						variant="text"
+						size="small"
+					/>
 
 					<Menu ref="menu" id="overlay_menu" :model="userItems" :popup="true" />
 				</div>
 			</template>
 		</Menubar>
-		<router-view v-slot="{ Component, route }">
+		<RouterView v-slot="{ Component, route }">
 			<Transition name="fade" mode="out-in">
 				<div :key="route.name">
 					<Suspense>
@@ -51,7 +59,7 @@
 					</Suspense>
 				</div>
 			</Transition>
-		</router-view>
+		</RouterView>
 
 		<Dialog v-model:visible="visible" modal header="Configuraciones Generales">
 			<div class="flex flex-col gap-4">
@@ -125,7 +133,6 @@ import { ref, watch } from 'vue'
 import { useConfiguraciones } from '@/composables/useConfiguraciones'
 import { useEventos } from '@/composables/useEventos'
 import { useAuth } from '@/composables/useAuth'
-import router from '@/router'
 
 const { logout } = useAuth()
 const { itemsReservas } = useEventos()
