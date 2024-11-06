@@ -9,7 +9,11 @@ export const useConfiguracionStore = defineStore('configuracion', {
 				tiempoEspera: 0,
 				urlShare: '',
 			},
-			loading: false,
+			interactividad: {
+				action: false,
+				loading: false,
+				visible: false,
+			},
 		}
 	},
 })

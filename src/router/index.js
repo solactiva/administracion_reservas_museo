@@ -40,6 +40,11 @@ const routes = [
 				name: 'Programaciones',
 				component: () => import('@/pages/ProgramacionesView.vue'),
 			},
+			{
+				path: '/configuracion',
+				name: 'Configuracion',
+				component: () => import('@/pages/ConfiguracionPage.vue'),
+			},
 		],
 	},
 	{

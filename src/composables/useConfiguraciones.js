@@ -8,17 +8,19 @@ import { useToast } from 'primevue/usetoast'
 
 export const useConfiguraciones = () => {
 	const toast = useToast()
-	const { configuracion, loading } = storeToRefs(useConfiguracionStore())
+	const { configuracion, interactividad } = storeToRefs(useConfiguracionStore())
 
 	const cargarConfiguracion = async () => {
+		interactividad.value.loading = true
 		const response = await getConfiguracion()
 		configuracion.value = response.data
+		interactividad.value.loading = false
 	}
 
 	const actualizarConfiguracion = async () => {
-		loading.value = true
+		interactividad.value.action = true
 		const response = await putConfiguracion(configuracion.value)
-		loading.value = false
+		interactividad.value.action = false
 		if (response.success) {
 			toast.add({
 				severity: 'success',
@@ -39,7 +41,7 @@ export const useConfiguraciones = () => {
 
 	return {
 		configuracion,
-		loading,
+		interactividad,
 		cargarConfiguracion,
 		actualizarConfiguracion,
 	}

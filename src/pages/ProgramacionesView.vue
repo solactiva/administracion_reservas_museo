@@ -4,7 +4,7 @@
 		v-if="interactividad.action"
 		class="flex h-screen justify-center items-center"
 	>
-		<ProgressSpinner />
+		<LoaderComponent />
 	</div>
 	<div v-else>
 		<ScheduleXCalendar :calendar-app="calendarApp" />
@@ -12,6 +12,7 @@
 </template>
 
 <script setup>
+import LoaderComponent from '@/components/LoaderComponent.vue'
 import { createEventsServicePlugin } from '@schedule-x/events-service'
 import { createDragAndDropPlugin } from '@schedule-x/drag-and-drop'
 import { createCalendarControlsPlugin } from '@schedule-x/calendar-controls'
