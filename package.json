@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@formkit/tempo": "^0.1.2",
+    "@primevue/forms": "^4.2.1",
     "@primevue/themes": "^4.0.7",
     "@schedule-x/calendar-controls": "^2.4.1",
     "@schedule-x/current-time": "^2.4.1",
@@ -25,7 +26,8 @@
     "primevue": "^4.1.1",
     "tailwindcss-primeui": "^0.3.4",
     "vue": "^3.4.29",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.4.5",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@primevue/auto-import-resolver": "^4.1.1",

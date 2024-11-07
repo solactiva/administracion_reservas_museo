@@ -24,6 +24,7 @@ export const useAuth = () => {
 		actionState.value = false
 		if (response.success) {
 			localStorage.setItem('token', response.data.token)
+			localStorage.setItem('identificador', response.data.identificador)
 			authStore.loginAuth()
 			return
 		}

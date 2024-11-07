@@ -10,6 +10,7 @@
 		<div class="flex-1 mb-5">
 			<Card>
 				<template #title>{{ activeMenuOption.label }} </template>
+				<template #subtitle>{{ activeMenuOption.description }}</template>
 				<template #content>
 					<!-- Content for the selected section goes here -->
 					<component :is="activeComponent" />
@@ -21,13 +22,18 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { GeneralForm, PerfilForm } from '@/components/Configuraciones'
+import {
+	GeneralForm,
+	PerfilForm,
+	SeguridadForm,
+} from '@/components/Configuraciones'
 
 const activeSection = ref('profile')
 const menuOptions = [
 	{
 		icon: 'pi pi-user',
 		label: 'Perfil',
+		description: 'Configuración basica del perfil de usuario logeado',
 		id: 'profile',
 		command: () => setActiveSection('profile'),
 		component: PerfilForm,
@@ -35,12 +41,15 @@ const menuOptions = [
 	{
 		icon: 'pi pi-key',
 		label: 'Seguridad',
+		description: 'Configuración de seguridad y privacidad de la cuenta',
 		id: 'security',
 		command: () => setActiveSection('security'),
+		component: SeguridadForm,
 	},
 	{
 		icon: 'pi pi-bell',
 		label: 'Notificaciones',
+		description: 'Configuración de las notificaciones y alertas',
 		id: 'notifications',
 		command: () => setActiveSection('notifications'),
 	},
@@ -50,6 +59,7 @@ const menuOptions = [
 	{
 		icon: 'pi pi-cog',
 		label: 'General Aplicación',
+		description: 'Configuraciones generales de la aplicación',
 		id: 'general',
 		command: () => setActiveSection('general'),
 		component: GeneralForm,

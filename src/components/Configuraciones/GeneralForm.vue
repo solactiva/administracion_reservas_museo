@@ -7,7 +7,7 @@
 	</div>
 	<div class="flex flex-col gap-7 my-5" v-else>
 		<div class="flex flex-col items-start gap-1">
-			<span class="font-medium">Imágen QR para el pago de reservas</span>
+			<span class="font-medium">QR pago de reservas</span>
 			<Image alt="Image" preview class="w-[150px]">
 				<template #image>
 					<img
@@ -46,7 +46,7 @@
 				máximo: 5MB.
 			</small>
 		</div>
-		<div class="flex flex-col gap-1">
+		<div class="flex flex-col">
 			<label for="" class="font-medium">Tiempo para liberar cupos:</label>
 			<InputGroup class="w-56">
 				<InputNumber
