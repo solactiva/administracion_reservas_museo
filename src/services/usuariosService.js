@@ -19,10 +19,21 @@ export const createUsuario = async (usuario) => {
 		throw error
 	}
 }
-export const getUsuario = async (id) => {
+export const getUsuarioPerfil = async (id) => {
 	try {
-		const res = await axios.get(
-			`/0c185f40-9712-4340-b277-3ff9d7029c54/usuarios/${id}`
+		const res = await axios.get(`/usuario/perfil?id=${id}`)
+		return res.data
+	} catch (error) {
+		console.log(error)
+		throw error
+	}
+}
+
+export const updateUsuarioPerfil = async (usuario) => {
+	try {
+		const res = await axios.put(
+			`/usuario/perfil?id=${usuario.identificador}`,
+			usuario
 		)
 		return res.data
 	} catch (error) {
@@ -31,10 +42,10 @@ export const getUsuario = async (id) => {
 	}
 }
 
-export const updateUsuario = async (usuario) => {
+export const updateUsuarioPassword = async (usuario) => {
 	try {
 		const res = await axios.put(
-			`/0c185f40-9712-4340-b277-3ff9d7029c54/usuarios/${usuario.id}`,
+			`/usuario/password?id=${usuario.identificador}`,
 			usuario
 		)
 		return res.data

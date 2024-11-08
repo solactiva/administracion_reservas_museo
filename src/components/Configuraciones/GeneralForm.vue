@@ -46,7 +46,7 @@
 				máximo: 5MB.
 			</small>
 		</div>
-		<div class="flex flex-col">
+		<div class="flex flex-col gap-1">
 			<label for="" class="font-medium">Tiempo para liberar cupos:</label>
 			<InputGroup class="w-56">
 				<InputNumber

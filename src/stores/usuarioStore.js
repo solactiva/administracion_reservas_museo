@@ -4,11 +4,7 @@ export const useUsuarioStore = defineStore('usuario', {
 	state: () => {
 		return {
 			usuario: {
-				identificador: '',
-				nombreCompleto: '',
-				correo: '',
-				password: '',
-				role: '',
+				identificador: localStorage.getItem('identificador'),
 			},
 			usuarios: [],
 			interactividad: {

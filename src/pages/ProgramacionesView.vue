@@ -168,3 +168,10 @@ watch(
 	{ deep: true }
 )
 </script>
+<style scoped>
+.sx-vue-calendar-wrapper {
+	height: 700px;
+	max-height: 78vh;
+	width: 100%;
+}
+</style>
