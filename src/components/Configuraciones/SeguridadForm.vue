@@ -15,6 +15,7 @@
 					fluid
 					v-model="usuario.password"
 					:feedback="false"
+					toggleMask
 				/>
 				<Message
 					v-if="form.password?.invalid"
@@ -33,6 +34,7 @@
 					type="password"
 					fluid
 					v-model="usuario.nuevaContrasena"
+					toggleMask
 				/>
 				<Message
 					v-if="form.nuevaContrasena?.invalid"
@@ -52,6 +54,7 @@
 					fluid
 					v-model="usuario.confirmarContrasena"
 					:feedback="false"
+					toggleMask
 				/>
 				<Message
 					v-if="form.confirmarContrasena?.invalid"
