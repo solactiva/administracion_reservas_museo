@@ -11,8 +11,13 @@ import { useToast } from 'primevue/usetoast'
 
 export const useProgramaciones = () => {
 	const programacionStore = useProgramacionStore()
-	const { programaciones, interactividad, programacionSeleccionada } =
-		storeToRefs(programacionStore)
+	const {
+		programaciones,
+		calendar,
+		interactividad,
+		programacionSeleccionada,
+		programacionGenerador,
+	} = storeToRefs(programacionStore)
 
 	const toast = useToast()
 	const crearProgramaciones = async (datosHorarios, datosEvento) => {
@@ -225,8 +230,10 @@ export const useProgramaciones = () => {
 
 	return {
 		programaciones,
+		calendar,
 		interactividad,
 		programacionSeleccionada,
+		programacionGenerador,
 		crearProgramaciones,
 		cargarProgramaciones,
 		cargarProgramacion,

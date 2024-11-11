@@ -92,208 +92,43 @@
 			/>
 		</div>
 	</Popover>
-	<Dialog
-		v-model:visible="interactividad.visible"
-		modal
-		:header="update ? 'Actualizar Evento' : 'Crear Nuevo Evento'"
-		:pt="{
-			root: 'w-11/12 md:w-9/12 lg:w-6/12 text-sm',
-		}"
-	>
-		<div class="flex flex-col gap-3">
-			<div class="grid grid-cols-6 gap-2">
-				<div class="col-span-4 flex flex-col">
-					<label>Nombre Evento:</label>
-					<InputText v-model="eventoSelected.nombre" class="h-8" />
-				</div>
-				<div class="flex items-end w-full col-span-2">
-					<ToggleButton
-						v-model="eventoSelected.activo"
-						class="w-24 h-8"
-						onLabel="Activado"
-						offLabel="Desactivado"
-					/>
-				</div>
-			</div>
-			<div class="flex flex-col">
-				<label>Descripción:</label>
-				<InputText v-model="eventoSelected.descripcion" class="h-8" />
-			</div>
-			<div class="grid grid-cols-2 gap-2">
-				<div class="flex flex-col">
-					<label>Capacidad:</label>
-					<InputNumber v-model="eventoSelected.capacidad" fluid class="h-8" />
-				</div>
-				<div class="flex flex-col">
-					<label>Duración (min):</label>
-					<InputNumber v-model="eventoSelected.duracion" fluid class="h-8" />
-				</div>
-			</div>
-			<div class="flex flex-col gap-2">
-				<div>
-					<label for="precio-evento">Precios:</label>
-					<InputGroup>
-						<InputText
-							v-model="precio.tipo"
-							placeholder="Tipo"
-							class="h-8 w-2/3"
-						/>
-						<InputNumber v-model="precio.precio" class="h-8 w-1/3" />
-						<Button
-							icon="pi pi-plus"
-							severity="primary"
-							@click="agregarPrecio"
-							class="h-8"
-						/>
-					</InputGroup>
-				</div>
-				<InputGroup v-for="(el, index) in eventoSelected.precios" :key="index">
-					<InputText v-model="el.tipo" placeholder="Tipo" class="h-8 w-2/3" />
-					<InputNumber v-model="el.precio" class="h-8 w-1/3" />
-					<Button
-						icon="pi pi-trash"
-						severity="danger"
-						@click="eventoSelected.precios.splice(index, 1)"
-						class="h-8"
-					/>
-				</InputGroup>
-			</div>
-			<div class="flex flex-wrap gap-2">
-				<label class="w-full">Días que el evento no estara activo:</label>
-				<div
-					v-for="(dia, index) of semana"
-					:key="index"
-					class="flex items-center gap-1"
-				>
-					<Checkbox
-						v-model="eventoSelected.diasNoActivo"
-						:inputId="dia.label"
-						name="dia"
-						:value="dia.value"
-					/>
-					<label :for="dia.label" class="text-xs">{{ dia.label }}</label>
-				</div>
-			</div>
-		</div>
-		<template #footer>
-			<Button label="Cancelar" text @click="interactividad.visible = false" />
-			<Button
-				:label="update ? 'Actualizar' : 'Crear'"
-				@click="
-					update
-						? actualizarEvento(eventoSelected)
-						: crearEvento(eventoSelected)
-				"
-				:loading="interactividad.loading"
-			/>
-		</template>
-	</Dialog>
-	<Dialog
-		v-model:visible="interactividad.visibleProgramacion"
-		modal
-		header="Programación de Evento"
-		:pt="{
-			root: 'w-11/12 md:w-9/12 lg:w-6/12 text-sm',
-		}"
-	>
-		<div class="container flex flex-col gap-4">
-			<div class="flex flex-col">
-				<label>Selecciona rango de fechas de programación:</label>
-				<DatePicker
-					v-model="programacion.dates"
-					selectionMode="range"
-					:manualInput="false"
-				/>
-			</div>
-			<div class="flex flex-col">
-				<label>Agrega horas de inicio del horario:</label>
-				<InputGroup>
-					<InputMask
-						id="basic"
-						v-model="programacion.time"
-						mask="99:99"
-						placeholder="00:00"
-					/>
-					<Button
-						icon="pi pi-plus"
-						@click="
-							programacion.horarios.push({
-								inicioEvento: programacion.time,
-							})
-						"
-					/>
-				</InputGroup>
-			</div>
-			<div class="flex flex-col">
-				<h3>Horarios:</h3>
-				<div class="flex flex-wrap gap-2">
-					<template v-for="(el, index) in programacion.horarios" :key="index">
-						<Chip
-							:label="el.inicioEvento"
-							removable
-							v-on:remove="programacion.horarios.splice(index, 1)"
-						/>
-					</template>
-				</div>
-			</div>
-		</div>
-		<template #footer>
-			<Button
-				label="Cancelar"
-				text
-				@click="interactividad.visibleProgramacion = false"
-			/>
-			<Button
-				label="Generar"
-				:loading="interactividad.loading"
-				@click="generarProgramacion"
-			/>
-		</template>
-	</Dialog>
 </template>
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, defineAsyncComponent, markRaw } from 'vue'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { useEventos } from '@/composables/useEventos'
-import { useProgramaciones } from '@/composables/useProgramaciones'
-import { format } from '@formkit/tempo'
+import { useDialog } from 'primevue/usedialog'
+
+const EventoForm = defineAsyncComponent(() =>
+	import('@/components/Eventos/EventoForm.vue')
+)
+const EventoFooter = defineAsyncComponent(() =>
+	import('@/components/Eventos/EventoFooter.vue')
+)
+const GeneradorForm = defineAsyncComponent(() =>
+	import('@/components/Programaciones/GeneradorForm.vue')
+)
+const GeneradorFooter = defineAsyncComponent(() =>
+	import('@/components/Programaciones/GeneradorFooter.vue')
+)
+
+const dialog = useDialog()
 
 const {
 	eventos,
-	eventoSelected,
 	interactividad,
 	cargarEventos,
 	cargarEventoUpdate,
-	crearEvento,
-	actualizarEvento,
 	eliminarEvento,
 	cleanEvento,
 } = useEventos()
-const { crearProgramaciones } = useProgramaciones()
+
 const toast = useToast()
 const confirm = useConfirm()
 const op = ref()
 const update = ref(false)
 const selectedId = ref('')
-const precio = ref({
-	tipo: '',
-	precio: 0,
-})
-const semana = ref([
-	{ label: 'Lunes', value: 1 },
-	{ label: 'Martes', value: 2 },
-	{ label: 'Miércoles', value: 3 },
-	{ label: 'Jueves', value: 4 },
-	{ label: 'Viernes', value: 5 },
-	{ label: 'Sábado', value: 6 },
-	{ label: 'Domingo', value: 0 },
-])
-
-const agregarPrecio = () => {
-	eventoSelected.value.precios.push({ ...precio.value })
-	precio.value = { tipo: '', precio: 0 }
-}
 
 const toggle = (event, identificador) => {
 	op.value.hide()
@@ -334,42 +169,65 @@ const confirmDelete = (id) => {
 		},
 	})
 }
-const actionActualizarEvento = async (id) => {
+
+const actionActualizarEvento = (id) => {
 	cargarEventoUpdate(id)
 	update.value = true
-	interactividad.value.visible = true
+	openModalEvento()
 }
 const actionCrearEvento = () => {
 	cleanEvento()
 	update.value = false
-	interactividad.value.visible = true
+	openModalEvento()
 }
 
 const actionProgramacionEvento = async (id) => {
 	cargarEventoUpdate(id)
-	interactividad.value.visibleProgramacion = true
+	openModalGenerador()
 }
 
-const programacion = ref({
-	dates: null,
-	time: null,
-	horarios: [],
-})
+const openModalEvento = () => {
+	const titleDialog = update.value ? 'Actualizar Evento' : 'Crear Nuevo Evento'
+	// eslint-disable-next-line no-unused-vars
+	const dialogRef = dialog.open(EventoForm, {
+		props: {
+			header: titleDialog,
+			style: {
+				width: '50vw',
+			},
+			breakpoints: {
+				'960px': '75vw',
+				'640px': '90vw',
+			},
+			modal: true,
+		},
+		data: {
+			update: update.value,
+		},
+		templates: {
+			footer: markRaw(EventoFooter),
+		},
+	})
+}
 
-const generarProgramacion = async () => {
-	const rangoFechas = {
-		inicio: format(new Date(programacion.value.dates[0]), 'YYYY-MM-DD'),
-		fin: format(new Date(programacion.value.dates[1]), 'YYYY-MM-DD'),
-	}
-
-	const payloadProgramacion = {
-		rangoFechas,
-		horarios: programacion.value.horarios,
-	}
-	interactividad.value.loading = true
-	await crearProgramaciones(payloadProgramacion, eventoSelected.value)
-	interactividad.value.loading = false
-	interactividad.value.visibleProgramacion = false
+const openModalGenerador = () => {
+	// eslint-disable-next-line no-unused-vars
+	const dialogRef = dialog.open(GeneradorForm, {
+		props: {
+			header: 'Generar Programación',
+			style: {
+				width: '50vw',
+			},
+			breakpoints: {
+				'960px': '75vw',
+				'640px': '90vw',
+			},
+			modal: true,
+		},
+		templates: {
+			footer: markRaw(GeneradorFooter),
+		},
+	})
 }
 
 cargarEventos()

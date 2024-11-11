@@ -20,6 +20,11 @@ export const useProgramacionStore = defineStore('programacion', {
 				finEvento: '',
 				activo: true,
 			},
+			programacionGenerador: {
+				dates: null,
+				time: null,
+				horarios: [],
+			},
 		}
 	},
 	actions: {

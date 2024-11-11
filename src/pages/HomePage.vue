@@ -63,14 +63,13 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useEventos } from '@/composables/useEventos'
 import { useAuth } from '@/composables/useAuth'
 
 const { logout } = useAuth()
-const { itemsReservas } = useEventos()
+const { itemsReservas, cargarEventos } = useEventos()
 
-const visible = ref(false)
 const menu = ref()
 const userItems = ref([
 	{
@@ -122,6 +121,10 @@ const items = ref([
 
 watch(itemsReservas, (value) => {
 	items.value[1].items = value
+})
+
+onMounted(async () => {
+	await cargarEventos()
 })
 </script>
 <style scoped></style>
