@@ -22,18 +22,6 @@ const routes = [
 				path: '/reservas/:idEvento',
 				name: 'Reservas',
 				component: () => import('@/pages/ReservasView.vue'),
-				children: [
-					{
-						path: 'pendientes',
-						name: 'Pendientes',
-						component: () => import('@/pages/PendientesPage.vue'),
-					},
-					{
-						path: 'confirmados',
-						name: 'Confirmados',
-						component: () => import('@/pages/ConfirmadosPage.vue'),
-					},
-				],
 			},
 			{
 				path: '/programaciones',

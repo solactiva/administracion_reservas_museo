@@ -1,5 +1,5 @@
 <template>
-	<div class="container mx-auto">
+	<div class="">
 		<DataTable :value="skeletons" v-if="fetching">
 			<template #header>
 				<div class="flex flex-wrap items-center justify-between gap-2">
@@ -32,7 +32,12 @@
 			<template #header>
 				<div class="flex flex-wrap items-center justify-between gap-2">
 					<div></div>
-					<Button icon="pi pi-refresh" @click="fetchReservas" rounded raised />
+					<Button
+						icon="pi pi-refresh"
+						@click="fetchReservas($route.params.idEvento)"
+						rounded
+						raised
+					/>
 				</div>
 			</template>
 			<Column header="Fecha Registro">
@@ -166,10 +171,12 @@
 	</div>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { format } from '@formkit/tempo'
 import { useReservas } from '@/composables/useReservas'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
 const { getReservasPendientes, confirmarReserva, rechazarReserva } =
 	useReservas()
 
@@ -186,13 +193,17 @@ const disabledConfirmar = ref(false)
 
 onMounted(async () => {
 	fetching.value = true
-	reservas.value = await getReservasPendientes()
+	reservas.value = await getReservasPendientes(route.params.idEvento)
 	fetching.value = false
+})
+
+watch(route, () => {
+	fetchReservas()
 })
 
 const fetchReservas = async () => {
 	fetching.value = true
-	reservas.value = await getReservasPendientes()
+	reservas.value = await getReservasPendientes(route.params.idEvento)
 	fetching.value = false
 }
 

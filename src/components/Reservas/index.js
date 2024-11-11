@@ -1,4 +1,5 @@
-import HeaderReserva from './HeaderFormReserva.vue'
-import BodyReserva from './BodyFormReserva.vue'
+import ReservaHeader from './ReservaHeader.vue'
+import ReservaForm from './ReservaForm.vue'
+import ReservaFooter from './ReservaFooter.vue'
 
-export { HeaderReserva, BodyReserva }
+export { ReservaHeader, ReservaForm, ReservaFooter }

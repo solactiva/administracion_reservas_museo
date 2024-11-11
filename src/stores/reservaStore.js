@@ -38,6 +38,7 @@ export const useReservaStore = defineStore('reserva', {
 			},
 			interactividad: {
 				loading: false,
+				action: false,
 				visible: false,
 			},
 		}

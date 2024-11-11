@@ -1,5 +1,5 @@
 <template>
-	<div class="container mx-auto">
+	<div class="">
 		<DataTable :value="skeletons" v-if="fetching">
 			<template #header>
 				<div class="flex flex-wrap items-center justify-between gap-2">
@@ -165,11 +165,13 @@
 	</div>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { format } from '@formkit/tempo'
 import { useReservas } from '@/composables/useReservas'
+import { useRoute } from 'vue-router'
 
 const { getReservasConfirmadas } = useReservas()
+const route = useRoute()
 
 const reservas = ref([])
 const reservaFiltrada = ref({})
@@ -180,13 +182,17 @@ const fetching = ref(false)
 
 onMounted(async () => {
 	fetching.value = true
-	reservas.value = await getReservasConfirmadas()
+	reservas.value = await getReservasConfirmadas(route.params.idEvento)
 	fetching.value = false
+})
+
+watch(route, () => {
+	fetchReservas()
 })
 
 const fetchReservas = async () => {
 	fetching.value = true
-	reservas.value = await getReservasConfirmadas()
+	reservas.value = await getReservasConfirmadas(route.params.idEvento)
 	fetching.value = false
 }
 

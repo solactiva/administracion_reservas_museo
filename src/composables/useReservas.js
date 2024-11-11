@@ -8,11 +8,13 @@ import {
 	postReserva,
 } from '@/services/reservasService'
 import { useReservaStore } from '@/stores/reservaStore'
+import { useToast } from 'primevue/usetoast'
 
 export const useReservas = () => {
 	const reservaStore = useReservaStore()
 	const { reserva, horario, world, selectedPlace, interactividad } =
 		storeToRefs(reservaStore)
+	const toast = useToast()
 
 	const loadStates = async (country_code) => {
 		world.value.states = []
@@ -29,16 +31,16 @@ export const useReservas = () => {
 		interactividad.value.loading = false
 	}
 
-	const getReservasPendientes = async () => {
-		const response = await getReservas('pendiente')
+	const getReservasPendientes = async (idEvento) => {
+		const response = await getReservas('pendiente', idEvento)
 		return response.data
 	}
-	const getReservasConfirmadas = async () => {
-		const response = await getReservas('confirmado')
+	const getReservasConfirmadas = async (idEvento) => {
+		const response = await getReservas('confirmado', idEvento)
 		return response.data
 	}
-	const getReservasRechazadas = async () => {
-		const response = await getReservas('rechazado')
+	const getReservasRechazadas = async (idEvento) => {
+		const response = await getReservas('rechazado', idEvento)
 		return response.data
 	}
 	const confirmarReserva = async (reserva) => {
@@ -53,8 +55,6 @@ export const useReservas = () => {
 		reserva.value.idProg = horario.value.identificador
 		reserva.value.cliente.nombre = reserva.value.cliente.nombre.toUpperCase()
 		reserva.value.cliente.email = reserva.value.cliente.email.toLowerCase()
-		reserva.value.cliente.pais = selectedPlace.value.pais.country
-		reserva.value.cliente.estado = selectedPlace.value.estado.name
 		reserva.value.fechaRegistro = new Date().toISOString()
 		reserva.value.cantidadTotal = reserva.value.cantidad.reduce(
 			(acc, curr) => acc + curr.cantidad,
@@ -65,8 +65,25 @@ export const useReservas = () => {
 				(acc, curr) => acc + curr.cantidad,
 				0
 			)
+		interactividad.value.action = true
 		const response = await postReserva(reserva.value)
-		return response
+		interactividad.value.action = false
+
+		if (response.success) {
+			toast.add({
+				severity: 'success',
+				summary: 'Reserva registrada',
+				detail: response.message,
+				life: 3000,
+			})
+		} else {
+			toast.add({
+				severity: 'error',
+				summary: 'Error al registrar reserva',
+				detail: response.message,
+				life: 3000,
+			})
+		}
 	}
 
 	const cleanReserva = () => {
