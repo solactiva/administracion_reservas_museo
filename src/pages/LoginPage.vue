@@ -48,7 +48,7 @@
 					label="Iniciar Sesión"
 					icon="pi pi-user"
 					class="w-full"
-					:type="submit"
+					type="submit"
 					:loading="actionState"
 				/>
 			</form>

@@ -35,7 +35,7 @@
 					<Button icon="pi pi-refresh" @click="fetchReservas" rounded raised />
 				</div>
 			</template>
-			<Column header="Fecha Registro">
+			<Column header="Fecha Registro" style="width: 15%">
 				<template #body="slotProps">
 					{{
 						format(
@@ -46,14 +46,14 @@
 					}}
 				</template>
 			</Column>
-			<Column field="cliente.nombre" header="Nombre">
+			<Column header="Nombre">
 				<template #body="slotProps">
 					<OverlayBadge severity="success">
 						{{ slotProps.data.cliente.nombre }}
 					</OverlayBadge>
 				</template>
 			</Column>
-			<Column header="Día de reserva">
+			<Column header="Día de reserva" style="width: 15%">
 				<template #body="slotProps">
 					<div class="flex flex-col">
 						<span>
@@ -73,11 +73,7 @@
 					</div>
 				</template>
 			</Column>
-			<Column
-				header="Personas"
-				headerStyle="width: 5rem; text-align: center"
-				class="text-center"
-			>
+			<Column header="Personas" style="width: 15%">
 				<template #body="slotProps">
 					<span class="mr-2">
 						<i class="pi pi-user"></i>
@@ -92,8 +88,8 @@
 				</template>
 			</Column>
 			<Column
-				headerStyle="width: 5rem; text-align: center"
 				bodyStyle="text-align: center; overflow: visible"
+				style="width: 5%"
 			>
 				<template #body="slotProps">
 					<Button

@@ -43,7 +43,36 @@
 						size="small"
 					/>
 
-					<Menu ref="menu" id="overlay_menu" :model="userItems" :popup="true" />
+					<Menu ref="menu" id="overlay_menu" :model="userItems" :popup="true">
+						<template #item="{ item, props }">
+							<RouterLink
+								v-if="item.route"
+								v-slot="{ href, navigate }"
+								:to="item.route"
+								custom
+							>
+								<a
+									v-ripple
+									:href="href"
+									v-bind="props.action"
+									@click="navigate"
+								>
+									<span :class="item.icon" />
+									<span class="ml-2">{{ item.label }}</span>
+								</a>
+							</RouterLink>
+							<a
+								v-else
+								v-ripple
+								:href="item.url"
+								:target="item.target"
+								v-bind="props.action"
+							>
+								<span :class="item.icon" />
+								<span class="ml-2">{{ item.label }}</span>
+							</a>
+						</template>
+					</Menu>
 				</div>
 			</template>
 		</Menubar>
@@ -76,13 +105,13 @@ const userItems = ref([
 		label: 'Opciones',
 		items: [
 			{
-				label: 'Perfil',
-				icon: 'pi pi-user',
+				label: 'Configuracion',
+				icon: 'pi pi-cog',
+				route: '/configuracion',
 			},
 			{
 				label: 'Cerrar Sesión',
 				icon: 'pi pi-sign-out',
-				shortcut: '⌘+Q',
 				command: () => {
 					logout()
 				},
@@ -106,16 +135,10 @@ const items = ref([
 		icon: 'pi pi-book',
 		items: [],
 	},
-
 	{
 		label: 'Programaciones',
 		icon: 'pi pi-calendar',
 		route: '/programaciones',
-	},
-	{
-		label: 'Configuracion',
-		icon: 'pi pi-cog',
-		route: '/configuracion',
 	},
 ])
 

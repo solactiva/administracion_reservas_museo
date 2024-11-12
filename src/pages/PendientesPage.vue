@@ -32,15 +32,10 @@
 			<template #header>
 				<div class="flex flex-wrap items-center justify-between gap-2">
 					<div></div>
-					<Button
-						icon="pi pi-refresh"
-						@click="fetchReservas($route.params.idEvento)"
-						rounded
-						raised
-					/>
+					<Button icon="pi pi-refresh" @click="fetchReservas" rounded raised />
 				</div>
 			</template>
-			<Column header="Fecha Registro">
+			<Column header="Fecha Registro" style="width: 15%">
 				<template #body="slotProps">
 					{{
 						format(
@@ -51,34 +46,44 @@
 					}}
 				</template>
 			</Column>
-			<Column field="cliente.nombre" header="Nombre">
+			<Column header="Nombre">
 				<template #body="slotProps">
 					<OverlayBadge severity="warn">
 						{{ slotProps.data.cliente.nombre }}
 					</OverlayBadge>
 				</template>
 			</Column>
-			<Column field="programacion.fecha" header="Día de reserva">
+			<Column header="Día de reserva" style="width: 15%">
 				<template #body="slotProps">
-					{{
-						format({
-							date: new Date(slotProps.data.programacion.fecha),
-							format: 'medium',
-							locale: 'es',
-							tz: 'UTC',
-						})
-					}}
+					<div class="flex flex-col">
+						<span>
+							{{
+								format({
+									date: new Date(slotProps.data.programacion.fecha),
+									format: 'medium',
+									locale: 'es',
+									tz: 'UTC',
+								})
+							}}
+						</span>
+						<span class="text-sm">
+							{{ slotProps.data.programacion.inicioEvento }} -
+							{{ slotProps.data.programacion.finEvento }}
+						</span>
+					</div>
+				</template>
+			</Column>
+			<Column header="Personas" style="width: 15%">
+				<template #body="slotProps">
+					<span class="mr-2">
+						<i class="pi pi-user"></i>
+						{{ slotProps.data.cantidadTotal }}
+					</span>
 				</template>
 			</Column>
 			<Column
-				field="cantidadTotal"
-				header="Personas"
-				headerStyle="width: 5rem; text-align: center"
-				class="text-center"
-			></Column>
-			<Column
-				headerStyle="width: 5rem; text-align: center"
 				bodyStyle="text-align: center; overflow: visible"
+				style="width: 5%"
 			>
 				<template #body="slotProps">
 					<Button
