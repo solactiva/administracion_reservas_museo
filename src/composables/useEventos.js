@@ -47,6 +47,11 @@ export const useEventos = () => {
 
 		if (response.success) {
 			eventos.value.push(evento)
+			itemsReservas.value.push({
+				label: evento.nombre,
+				icon: 'pi pi-circle-fill',
+				route: `/reservas/${evento.identificador}`,
+			})
 			interactividad.value.visible = false
 
 			toast.add({
@@ -102,6 +107,9 @@ export const useEventos = () => {
 		if (response.success) {
 			eventos.value = eventos.value.filter(
 				(evento) => evento.identificador !== idEvento
+			)
+			itemsReservas.value = itemsReservas.value.filter(
+				(item) => item.route !== `/reservas/${idEvento}`
 			)
 
 			toast.add({
