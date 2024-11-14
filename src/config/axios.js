@@ -1,3 +1,3 @@
 import axios from 'axios'
 
-axios.defaults.baseURL = import.meta.env.END_POINT
+axios.defaults.baseURL = import.meta.env.VITE_END_POINT
