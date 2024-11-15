@@ -3,7 +3,7 @@
 	<div class="flex flex-col md:flex-row h-full gap-4">
 		<!-- Sidebar -->
 		<div class="md:w-64">
-			<Menu :model="menuOptions" :style="{ border: 'none' }" />
+			<Menu :model="filteredMenuOptions" :style="{ border: 'none' }" />
 		</div>
 
 		<!-- Content Area -->
@@ -38,6 +38,7 @@ const menuOptions = [
 		id: 'profile',
 		command: () => setActiveSection('profile'),
 		component: PerfilForm,
+		visible: true,
 	},
 	{
 		icon: 'pi pi-key',
@@ -46,6 +47,7 @@ const menuOptions = [
 		id: 'security',
 		command: () => setActiveSection('security'),
 		component: SeguridadForm,
+		visible: true,
 	},
 	{
 		icon: 'pi pi-bell',
@@ -53,9 +55,11 @@ const menuOptions = [
 		description: 'Configuración de las notificaciones y alertas',
 		id: 'notifications',
 		command: () => setActiveSection('notifications'),
+		visible: true,
 	},
 	{
 		separator: true,
+		visible: localStorage.getItem('rol') === '1',
 	},
 	{
 		icon: 'pi pi-cog',
@@ -64,6 +68,7 @@ const menuOptions = [
 		id: 'general',
 		command: () => setActiveSection('general'),
 		component: GeneralForm,
+		visible: localStorage.getItem('rol') === '1',
 	},
 	{
 		icon: 'pi pi-users',
@@ -72,8 +77,13 @@ const menuOptions = [
 		id: 'usuarios',
 		command: () => setActiveSection('usuarios'),
 		component: UsuariosTable,
+		visible: localStorage.getItem('rol') === '1',
 	},
 ]
+
+const filteredMenuOptions = computed(() => {
+	return menuOptions.filter((option) => option.visible)
+})
 
 const activeMenuOption = computed(() => {
 	return menuOptions.find((option) => option.id === activeSection.value)

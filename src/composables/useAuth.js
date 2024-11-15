@@ -25,6 +25,7 @@ export const useAuth = () => {
 		if (response.success) {
 			localStorage.setItem('token', response.data.token)
 			localStorage.setItem('identificador', response.data.identificador)
+			localStorage.setItem('rol', response.data.rol)
 			authStore.loginAuth()
 			return
 		}
@@ -36,7 +37,8 @@ export const useAuth = () => {
 
 	const logout = () => {
 		localStorage.clear()
-		authStore.logoutAuth()
+		// authStore.logoutAuth()
+		window.location.href = '/login'
 	}
 
 	return { isLogin, loginForm, loginData, actionState, login, logout }
