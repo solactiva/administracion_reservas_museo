@@ -19,6 +19,30 @@ export const createUsuario = async (usuario) => {
 		throw error
 	}
 }
+
+export const updateUsuario = async (usuario) => {
+	try {
+		const res = await axios.put(
+			`/usuarios?id=${usuario.identificador}`,
+			usuario
+		)
+		return res.data
+	} catch (error) {
+		console.log(error)
+		throw error
+	}
+}
+
+export const deleteUsuario = async (id) => {
+	try {
+		const res = await axios.delete(`/usuarios?id=${id}`)
+		return res.data
+	} catch (error) {
+		console.log(error)
+		throw error
+	}
+}
+
 export const getUsuarioPerfil = async (id) => {
 	try {
 		const res = await axios.get(`/usuario/perfil?id=${id}`)
@@ -47,18 +71,6 @@ export const updateUsuarioPassword = async (usuario) => {
 		const res = await axios.put(
 			`/usuario/password?id=${usuario.identificador}`,
 			usuario
-		)
-		return res.data
-	} catch (error) {
-		console.log(error)
-		throw error
-	}
-}
-
-export const deleteUsuario = async (id) => {
-	try {
-		const res = await axios.delete(
-			`/0c185f40-9712-4340-b277-3ff9d7029c54/usuarios/${id}`
 		)
 		return res.data
 	} catch (error) {

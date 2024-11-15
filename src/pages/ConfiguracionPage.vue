@@ -26,6 +26,7 @@ import {
 	GeneralForm,
 	PerfilForm,
 	SeguridadForm,
+	UsuariosTable,
 } from '@/components/Configuraciones'
 
 const activeSection = ref('profile')
@@ -63,6 +64,14 @@ const menuOptions = [
 		id: 'general',
 		command: () => setActiveSection('general'),
 		component: GeneralForm,
+	},
+	{
+		icon: 'pi pi-users',
+		label: 'Usuarios',
+		description: 'Administrador de usuarios y permisos',
+		id: 'usuarios',
+		command: () => setActiveSection('usuarios'),
+		component: UsuariosTable,
 	},
 ]
 

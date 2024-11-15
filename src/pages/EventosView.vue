@@ -201,11 +201,11 @@ const openModalEvento = () => {
 			},
 			modal: true,
 		},
-		data: {
-			update: update.value,
-		},
 		templates: {
 			footer: markRaw(EventoFooter),
+		},
+		data: {
+			update: update.value,
 		},
 	})
 }
