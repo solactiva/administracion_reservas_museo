@@ -1,13 +1,16 @@
 <template>
 	<div class="w-full mt-2">
-		<div class="flex gap-2 md:gap-7">
-			<div class="w-5/12 sm:w-1/4 flex flex-col gap-2">
+		<div class="flex flex-col gap-2">
+			<div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 items-end">
 				<div
 					v-for="(pago, index) in evento.precios"
 					:key="index"
-					class="flex flex-col"
+					class="flex flex-row sm:flex-col"
 				>
-					<label :for="`cantidad-personas${index}`" class="text-sm">
+					<label
+						:for="`cantidad-personas${index}`"
+						class="text-sm w-full sm:w-3/4"
+					>
 						{{ pago.tipo }}
 					</label>
 					<InputNumber
@@ -33,15 +36,15 @@
 					</InputNumber>
 				</div>
 			</div>
-			<div class="w-7/12 sm:w-3/4">
-				<Fieldset
-					legend="Adicionales"
-					:toggleable="true"
-					:collapsed="true"
-					v-on:toggle="console.log($event.value ? 'collapsed' : 'expanded')"
-				>
+			<Fieldset
+				legend="Adicionales"
+				:toggleable="true"
+				:collapsed="true"
+				v-on:toggle="console.log($event.value ? 'collapsed' : 'expanded')"
+			>
+				<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
 					<div
-						class="flex flex-col sm:flex-row mb-2"
+						class="flex flex-row sm:flex-col mb-2"
 						v-for="(pago, index) in evento.precios"
 						:key="index"
 					>
@@ -68,7 +71,47 @@
 							</template>
 						</InputNumber>
 					</div>
-				</Fieldset>
+				</div>
+			</Fieldset>
+		</div>
+		<Divider type="dashed" />
+		<div class="flex flex-col gap-2">
+			<div class="card flex flex-col">
+				<label for="tipoReserva" class="text-sm">Tipo de reserva</label>
+				<SelectButton
+					id="tipoReserva"
+					v-model="reserva.tipoReserva"
+					:options="tiposDeReserva"
+					optionLabel="label"
+					optionValue="value"
+				/>
+			</div>
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+				<div class="flex flex-col">
+					<label for="paymethod" class="text-sm">Método de pago</label>
+					<Select
+						id="paymethod"
+						v-model="reserva.pago.metodoPago"
+						:options="paymethod"
+						optionLabel="name"
+						optionValue="value"
+						placeholder="Seleccione un metodo de pago"
+						class="h-8 w-full"
+						:disabled="reserva.tipoReserva === 'call'"
+					/>
+				</div>
+				<div class="flex flex-col">
+					<label for="descuento" class="text-sm">Descuento</label>
+					<InputNumber
+						inputClass="h-8 w-full"
+						v-model="reserva.pago.descuento"
+						inputId="descuento"
+						mode="decimal"
+						showButtons
+						fluid
+						:min="0"
+					/>
+				</div>
 			</div>
 		</div>
 		<Divider type="dashed" />
@@ -215,6 +258,14 @@ const selectedCountry = ref({
 	flag: 'https://flagcdn.com/bo.svg',
 })
 const numero = ref(null)
+const paymethod = ref([
+	{ name: 'Efectivo', value: 'efectivo' },
+	{ name: 'QR', value: 'qr' },
+])
+const tiposDeReserva = ref([
+	{ label: '🏢 En persona', value: 'onsite' },
+	{ label: '📲 Por Llamada/WhatsApp', value: 'call' },
+])
 
 const cuposRestantes = computed(() => {
 	return (

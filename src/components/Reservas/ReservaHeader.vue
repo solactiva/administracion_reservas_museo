@@ -1,7 +1,7 @@
 <template>
 	<div class="flex flex-col w-full">
 		<h2 class="text-lg font-bold mb-1">Datos de reserva</h2>
-		<div class="grid grid-cols-3 w-full text-sm">
+		<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full text-sm">
 			<div class="flex flex-col items-center">
 				<span class="font-bold">HORARIO</span>
 				<span>{{ `${horario.inicioEvento} - ${horario.finEvento}` }}</span>
@@ -13,6 +13,10 @@
 			<div class="flex flex-col items-center">
 				<span class="font-bold">TOTAL</span>
 				<span>{{ precioTotal }} BOB</span>
+			</div>
+			<div class="flex flex-col items-center">
+				<span class="font-bold">TOTAL Desc.</span>
+				<span>{{ precioTotalDesc }} BOB</span>
 			</div>
 		</div>
 	</div>
@@ -39,6 +43,20 @@ const precioTotal = computed(() => {
 	return total + adicionales
 })
 
+const precioTotalDesc = computed(() => {
+	const total = reserva.value.cantidad.reduce(
+		(acc, curr, index) =>
+			acc + curr.cantidad * evento.value.precios[index].precio,
+		0
+	)
+	const adicionales = reserva.value.cantidadAdicional.reduce(
+		(acc, curr, index) =>
+			acc + curr.cantidad * evento.value.precios[index].precio,
+		0
+	)
+	return total + adicionales - reserva.value.pago.descuento
+})
+
 const cuposRestantes = computed(() => {
 	return (
 		horario.value.spots -
@@ -48,5 +66,8 @@ const cuposRestantes = computed(() => {
 
 watch(precioTotal, (value) => {
 	reserva.value.pago.total = value
+})
+watch(precioTotalDesc, (value) => {
+	reserva.value.pago.totalDesc = value
 })
 </script>

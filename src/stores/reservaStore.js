@@ -17,9 +17,13 @@ export const useReservaStore = defineStore('reserva', {
 				cantidadTotal: 0,
 				cantidadTotalAdicional: 0,
 				pago: {
+					descuento: 0,
 					total: 0,
+					totalDesc: 0,
 					comprobante: null,
+					metodoPago: '',
 				},
+				tipoReserva: 'onsite',
 				fechaRegistro: '',
 			},
 			horario: {
