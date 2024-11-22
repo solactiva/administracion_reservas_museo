@@ -112,6 +112,12 @@ const itemsTabs = [
 			import('@/pages/ConfirmadosPage.vue')
 		),
 	},
+	{
+		label: 'Rechazados',
+		icon: 'pi pi-times-circle',
+		value: '2',
+		component: defineAsyncComponent(() => import('@/pages/RechazadosPage.vue')),
+	},
 ]
 
 watch(
