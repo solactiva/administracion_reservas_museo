@@ -87,7 +87,7 @@ const dialog = useDialog()
 const ruta = useRoute()
 const { evento, cargarEvento } = useEventos()
 const { horarios, action, cargarHorarios } = useHorarios()
-const { reserva, horario, cleanReserva } = useReservas()
+const { reserva, horario, cleanReserva, loadReservas } = useReservas()
 
 const fechaSeleccionada = ref(new Date())
 
@@ -102,21 +102,25 @@ const itemsTabs = [
 		label: 'Pendientes',
 		icon: 'pi pi-clock',
 		value: '0',
-		component: defineAsyncComponent(() => import('@/pages/PendientesPage.vue')),
+		component: defineAsyncComponent(() =>
+			import('@/components/Reservas/PendientesTable.vue')
+		),
 	},
 	{
 		label: 'Confirmados',
 		icon: 'pi pi-check',
 		value: '1',
 		component: defineAsyncComponent(() =>
-			import('@/pages/ConfirmadosPage.vue')
+			import('@/components/Reservas/ConfirmadosTable.vue')
 		),
 	},
 	{
 		label: 'Rechazados',
 		icon: 'pi pi-times-circle',
 		value: '2',
-		component: defineAsyncComponent(() => import('@/pages/RechazadosPage.vue')),
+		component: defineAsyncComponent(() =>
+			import('@/components/Reservas/RechazadosTable.vue')
+		),
 	},
 ]
 
@@ -126,6 +130,7 @@ watch(
 		if (nuevoId !== antiguoId) {
 			await cargarEvento(nuevoId)
 			await actualizarHorarios()
+			await loadReservas(nuevoId)
 		}
 	},
 	{ immediate: true }

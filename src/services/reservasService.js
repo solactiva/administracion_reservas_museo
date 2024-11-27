@@ -1,10 +1,12 @@
 import axios from 'axios'
 
-export const getReservas = async (estado, idEvento) => {
-	const response = await axios.get(
-		`/confirmaciones?estado=${estado}&idEvento=${idEvento}`
-	)
-	return response.data
+export const getReservas = async (idEvento) => {
+	try {
+		const response = await axios.get(`/reservas?idEvento=${idEvento}`)
+		return response.data
+	} catch (error) {
+		console.error(error)
+	}
 }
 
 export const getStates = async (country) => {

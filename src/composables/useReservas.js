@@ -12,8 +12,17 @@ import { useToast } from 'primevue/usetoast'
 
 export const useReservas = () => {
 	const reservaStore = useReservaStore()
-	const { reserva, horario, world, selectedPlace, interactividad } =
-		storeToRefs(reservaStore)
+	const {
+		reserva,
+		horario,
+		world,
+		selectedPlace,
+		interactividad,
+		reservas,
+		reservasConfirmadas,
+		reservasPendientes,
+		reservasRechazadas,
+	} = storeToRefs(reservaStore)
 	const toast = useToast()
 
 	const loadStates = async (country_code) => {
@@ -31,18 +40,25 @@ export const useReservas = () => {
 		interactividad.value.loading = false
 	}
 
-	const getReservasPendientes = async (idEvento) => {
-		const response = await getReservas('pendiente', idEvento)
-		return response.data
+	const loadReservas = async (idEvento) => {
+		interactividad.value.loading = true
+		const response = await getReservas(idEvento)
+		interactividad.value.loading = false
+		if (response.success) {
+			reservas.value = getReservaDateFormated(response.data)
+		}
 	}
-	const getReservasConfirmadas = async (idEvento) => {
-		const response = await getReservas('confirmado', idEvento)
-		return response.data
+
+	const getReservaDateFormated = (data) => {
+		return [...(data || [])].map((d) => {
+			const [year, month, day] = d.programacion.fecha.split('-')
+			d.fechaRegistro = new Date(d.fechaRegistro)
+			d.programacion.fecha = new Date(year, month - 1, day)
+
+			return d
+		})
 	}
-	const getReservasRechazadas = async (idEvento) => {
-		const response = await getReservas('rechazado', idEvento)
-		return response.data
-	}
+
 	const confirmarReserva = async (reserva) => {
 		const response = await postConfirmacion(reserva)
 		return response
@@ -70,6 +86,7 @@ export const useReservas = () => {
 		interactividad.value.action = false
 
 		if (response.success) {
+			reservas.value.push(reserva.value)
 			toast.add({
 				severity: 'success',
 				summary: 'Reserva registrada',
@@ -96,12 +113,13 @@ export const useReservas = () => {
 		world,
 		selectedPlace,
 		interactividad,
+		reservasConfirmadas,
+		reservasPendientes,
+		reservasRechazadas,
 
 		loadStates,
 		loadCities,
-		getReservasPendientes,
-		getReservasConfirmadas,
-		getReservasRechazadas,
+		loadReservas,
 		registrarReserva,
 		confirmarReserva,
 		rechazarReserva,

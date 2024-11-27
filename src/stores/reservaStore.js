@@ -45,11 +45,25 @@ export const useReservaStore = defineStore('reserva', {
 				action: false,
 				visible: false,
 			},
+			reservas: [],
 		}
 	},
 	actions: {
 		resetStore() {
+			const reservas = this.reservas
 			this.$reset()
+			this.reservas = reservas
+		},
+	},
+	getters: {
+		reservasPendientes() {
+			return this.reservas.filter((reserva) => reserva.estado === 'pendiente')
+		},
+		reservasConfirmadas() {
+			return this.reservas.filter((reserva) => reserva.estado === 'confirmado')
+		},
+		reservasRechazadas() {
+			return this.reservas.filter((reserva) => reserva.estado === 'rechazado')
 		},
 	},
 })

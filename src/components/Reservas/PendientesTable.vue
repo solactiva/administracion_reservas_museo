@@ -1,6 +1,6 @@
 <template>
 	<div class="">
-		<DataTable :value="skeletons" v-if="fetching">
+		<DataTable :value="new Array(6)" v-if="interactividad.loading">
 			<template #header>
 				<div class="flex flex-wrap items-center justify-between gap-2">
 					<div></div>
@@ -28,90 +28,127 @@
 				</template>
 			</Column>
 		</DataTable>
-		<DataTable :value="reservas" v-else>
+		<DataTable
+			v-model:filters="filters"
+			:value="reservasPendientes"
+			paginator
+			:rows="10"
+			dataKey="identificador"
+			filterDisplay="menu"
+			v-else
+		>
 			<template #header>
 				<div class="flex flex-wrap items-center justify-between gap-2">
 					<div></div>
 					<Button icon="pi pi-refresh" @click="fetchReservas" rounded raised />
 				</div>
 			</template>
-			<Column header="Fecha Registro" style="width: 15%">
-				<template #body="slotProps">
+			<template #empty> No se encontraron resultados. </template>
+			<template #loading> Cargando información. Por favor espere. </template>
+			<Column
+				header="Fecha Registro"
+				filterField="fechaRegistro"
+				dataType="date"
+			>
+				<template #body="{ data }">
 					{{
 						format(
-							new Date(slotProps.data.fechaRegistro),
+							new Date(data.fechaRegistro),
 							{ date: 'short', time: 'short' },
 							'es'
 						)
 					}}
 				</template>
-			</Column>
-			<Column header="Nombre">
-				<template #body="slotProps">
-					<OverlayBadge severity="danger">
-						{{ slotProps.data.cliente.nombre }}
-					</OverlayBadge>
+				<template #filter="{ filterModel }">
+					<DatePicker
+						v-model="filterModel.value"
+						dateFormat="dd/mm/yy"
+						placeholder="dd/mm/yyyy"
+					/>
 				</template>
 			</Column>
-			<Column header="Tipo Reserva">
-				<template #body="slotProps">
+			<Column header="Nombre" filterField="cliente.nombre">
+				<template #body="{ data }">
+					{{ data.cliente.nombre }}
+				</template>
+				<template #filter="{ filterModel, filterCallback }">
+					<InputText
+						v-model="filterModel.value"
+						type="text"
+						@input="filterCallback()"
+						placeholder="Buscar por Nombre"
+						fluid
+						class="h-8 w-56"
+					/>
+				</template>
+			</Column>
+			<Column
+				header="Tipo Reserva"
+				filterField="tipoReserva"
+				:filterMenuStyle="{ width: '14rem' }"
+				style="min-width: 12rem"
+			>
+				<template #body="{ data }">
 					<Tag
-						:value="slotProps.data.tipoReserva === 'call' ? 'Llamada' : 'Web'"
-						:icon="
-							slotProps.data.tipoReserva === 'call'
-								? 'pi pi-whatsapp'
-								: 'pi pi-globe'
+						:value="
+							data.tipoReserva
+								? tiposReserva.find((el) => el.code === data.tipoReserva).name
+								: 'N/A'
 						"
-						:severity="
-							slotProps.data.tipoReserva === 'call' ? 'success' : 'info'
-						"
+						:severity="getSeverity(data.tipoReserva)"
 					></Tag>
 				</template>
-			</Column>
-			<Column header="Día de reserva" style="width: 15%">
-				<template #body="slotProps">
-					<div class="flex flex-col">
-						<span>
-							{{
-								format({
-									date: new Date(slotProps.data.programacion.fecha),
-									format: 'medium',
-									locale: 'es',
-									tz: 'UTC',
-								})
-							}}
-						</span>
-						<span class="text-sm">
-							{{ slotProps.data.programacion.inicioEvento }} -
-							{{ slotProps.data.programacion.finEvento }}
-						</span>
-					</div>
+				<template #filter="{ filterModel }">
+					<Select
+						v-model="filterModel.value"
+						:options="reservasTipos"
+						placeholder="Selecciona uno"
+						showClear
+					>
+						<template #option="slotProps">
+							<Tag
+								:value="
+									tiposReserva.find((el) => el.code === slotProps.option).name
+								"
+								:severity="getSeverity(slotProps.option)"
+							/>
+						</template>
+					</Select>
 				</template>
 			</Column>
-			<Column header="Personas" style="width: 15%">
-				<template #body="slotProps">
-					<span class="mr-2">
-						<i class="pi pi-user"></i>
-						{{ slotProps.data.cantidadTotal }}
-					</span>
+			<Column
+				header="Día de reserva"
+				filterField="programacion.fecha"
+				dataType="date"
+				style="min-width: 10rem"
+			>
+				<template #body="{ data }">
+					{{ formatDate(data.programacion.fecha) }}
+				</template>
+				<template #filter="{ filterModel }">
+					<DatePicker
+						v-model="filterModel.value"
+						dateFormat="dd/mm/yy"
+						placeholder="dd/mm/yyyy"
+					/>
 				</template>
 			</Column>
 			<Column
 				bodyStyle="text-align: center; overflow: visible"
 				style="width: 5%"
 			>
-				<template #body="slotProps">
+				<template #body="{ data }">
 					<Button
 						type="button"
 						icon="pi pi-eye"
 						rounded
 						severity="secondary"
-						@click="verReserva(slotProps.data.identificador)"
+						@click="verReserva(data.identificador)"
 					/>
 				</template>
 			</Column>
 		</DataTable>
-		<Dialog
+		<!-- <Dialog
 			v-model:visible="visible"
 			modal
 			header="Comprobación de pago"
@@ -187,91 +224,105 @@
 					/>
 				</div>
 			</template>
-		</Dialog>
+		</Dialog> -->
 	</div>
 </template>
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref } from 'vue'
 import { format } from '@formkit/tempo'
 import { useReservas } from '@/composables/useReservas'
 import { useRoute } from 'vue-router'
+import { FilterMatchMode, FilterOperator } from '@primevue/core/api'
 
 const route = useRoute()
-const { getReservasRechazadas, confirmarReserva, rechazarReserva } =
-	useReservas()
+const {
+	interactividad,
+	reservasPendientes,
+	loadReservas,
+	confirmarReserva,
+	rechazarReserva,
+} = useReservas()
 
-const reservas = ref([])
 const reservaFiltrada = ref(null)
-const skeletons = ref(new Array(6))
-const fetching = ref(false)
-
-const visible = ref(false)
-const loadingRechazar = ref(false)
-const disabledRechazar = ref(false)
-const loadingConfirmar = ref(false)
-const disabledConfirmar = ref(false)
-
-onMounted(async () => {
-	fetching.value = true
-	reservas.value = await getReservasRechazadas(route.params.idEvento)
-	fetching.value = false
-})
-
-watch(route, () => {
-	fetchReservas()
-})
 
 const fetchReservas = async () => {
-	fetching.value = true
-	reservas.value = await getReservasRechazadas(route.params.idEvento)
-	fetching.value = false
+	await loadReservas(route.params.idEvento)
 }
 
 const confirmarReservaAction = async () => {
-	loadingConfirmar.value = true
-	disabledConfirmar.value = true
-	disabledRechazar.value = true
 	const res = await confirmarReserva({
 		identificador: reservaFiltrada.value.identificador,
 		idProg: reservaFiltrada.value.idProg,
 	})
-	loadingConfirmar.value = false
-	disabledConfirmar.value = false
-	disabledRechazar.value = false
 
 	if (res.success) {
 		reservas.value.splice(reservas.value.indexOf(reservaFiltrada.value), 1)
-		visible.value = false
 		return
 	}
 	return
 }
 
 const rechazarReservaAction = async () => {
-	loadingRechazar.value = true
-	disabledRechazar.value = true
-	disabledConfirmar.value = true
 	const res = await rechazarReserva({
 		identificador: reservaFiltrada.value.identificador,
 		idProg: reservaFiltrada.value.idProg,
 	})
-	loadingRechazar.value = false
-	disabledRechazar.value = false
-	disabledConfirmar.value = false
 
 	if (res.success) {
 		reservas.value.splice(reservas.value.indexOf(reservaFiltrada.value), 1)
-		visible.value = false
 		return
 	}
 	return
 }
 
 const verReserva = (id) => {
-	reservaFiltrada.value = reservas.value.find(
+	reservaFiltrada.value = reservasPendientes.value.find(
 		(reserva) => reserva.identificador === id
 	)
-	visible.value = true
+}
+
+const filters = ref({
+	'cliente.nombre': { value: null, matchMode: FilterMatchMode.CONTAINS },
+	tipoReserva: { value: null, matchMode: FilterMatchMode.EQUALS },
+	fechaRegistro: {
+		operator: FilterOperator.AND,
+		constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+	},
+	'programacion.fecha': {
+		operator: FilterOperator.AND,
+		constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+	},
+})
+
+const tiposReserva = ref([
+	{ code: 'call', name: 'Llamada' },
+	{ code: 'onsite', name: 'Presencial' },
+	{ code: 'online', name: 'Online' },
+])
+
+const reservasTipos = tiposReserva.value.map((el) => el.code)
+
+const getSeverity = (status) => {
+	switch (status) {
+		case 'call':
+			return 'success'
+
+		case 'onsite':
+			return 'warn'
+
+		case 'online':
+			return 'info'
+		default:
+			return 'secondary'
+	}
+}
+
+const formatDate = (value) => {
+	return value.toLocaleDateString('es-BO', {
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric',
+	})
 }
 </script>
 <style scoped></style>
