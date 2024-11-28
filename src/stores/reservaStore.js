@@ -26,6 +26,8 @@ export const useReservaStore = defineStore('reserva', {
 				tipoReserva: 'onsite',
 				fechaRegistro: '',
 			},
+			reservas: [],
+			reservaSeleccionada: {},
 			horario: {
 				fecha: null,
 				inicioEvento: null,
@@ -42,10 +44,11 @@ export const useReservaStore = defineStore('reserva', {
 			},
 			interactividad: {
 				loading: false,
+				loadingModal: false,
+				loadingTable: false,
 				action: false,
 				visible: false,
 			},
-			reservas: [],
 		}
 	},
 	actions: {

@@ -1,5 +1,5 @@
 <template>
-	<DataTable :value="new Array(6)" v-if="interactividad.loading">
+	<DataTable :value="new Array(6)" v-if="interactividad.loadingTable">
 		<template #header>
 			<div class="flex flex-wrap items-center justify-between gap-2">
 				<div></div>
@@ -112,7 +112,7 @@
 			</template>
 		</Column>
 		<Column
-			header="Día de reserva"
+			header="Día de visita"
 			filterField="programacion.fecha"
 			dataType="date"
 			style="min-width: 10rem"
@@ -142,25 +142,27 @@
 	</DataTable>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { ref, defineAsyncComponent } from 'vue'
 import { format } from '@formkit/tempo'
 import { useReservas } from '@/composables/useReservas'
 import { useRoute } from 'vue-router'
 import { FilterMatchMode, FilterOperator } from '@primevue/core/api'
+import { useDialog } from 'primevue/usedialog'
 
+const ManageReservaForm = defineAsyncComponent(() =>
+	import('@/components/Reservas/ManageReservaForm.vue')
+)
+
+const dialog = useDialog()
 const route = useRoute()
 const { interactividad, reservasRechazadas, loadReservas } = useReservas()
-
-const reservaFiltrada = ref(null)
 
 const fetchReservas = () => {
 	loadReservas(route.params.idEvento)
 }
 
-const verReserva = (id) => {
-	reservaFiltrada.value = reservasRechazadas.value.find(
-		(reserva) => reserva.identificador === id
-	)
+const verReserva = (identificador) => {
+	openModalManageReserva(identificador, false)
 }
 
 const filters = ref({
@@ -198,10 +200,28 @@ const getSeverity = (status) => {
 }
 
 const formatDate = (value) => {
-	return value.toLocaleDateString('es-BO', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric',
+	return format(new Date(value), { date: 'full' }, 'es')
+}
+
+const openModalManageReserva = (identificador, modificar) => {
+	// eslint-disable-next-line no-unused-vars
+	const dialogRef = dialog.open(ManageReservaForm, {
+		props: {
+			header: 'Comprobación de reserva',
+			style: {
+				width: '65vw',
+			},
+			breakpoints: {
+				'1024px': '80vw',
+				'960px': '75vw',
+				'640px': '90vw',
+			},
+			modal: true,
+		},
+		data: {
+			identificador,
+			modificar,
+		},
 	})
 }
 </script>

@@ -1,11 +1,13 @@
 import { storeToRefs } from 'pinia'
 import {
 	getReservas,
+	getReserva,
 	getStates,
 	getCities,
 	postConfirmacion,
 	postRechazo,
 	postReserva,
+	deleteReserva,
 } from '@/services/reservasService'
 import { useReservaStore } from '@/stores/reservaStore'
 import { useToast } from 'primevue/usetoast'
@@ -19,6 +21,7 @@ export const useReservas = () => {
 		selectedPlace,
 		interactividad,
 		reservas,
+		reservaSeleccionada,
 		reservasConfirmadas,
 		reservasPendientes,
 		reservasRechazadas,
@@ -41,11 +44,20 @@ export const useReservas = () => {
 	}
 
 	const loadReservas = async (idEvento) => {
-		interactividad.value.loading = true
+		interactividad.value.loadingTable = true
 		const response = await getReservas(idEvento)
-		interactividad.value.loading = false
+		interactividad.value.loadingTable = false
 		if (response.success) {
 			reservas.value = getReservaDateFormated(response.data)
+		}
+	}
+
+	const loadReserva = async (idReserva) => {
+		interactividad.value.loadingModal = true
+		const response = await getReserva(idReserva)
+		interactividad.value.loadingModal = false
+		if (response.success) {
+			reservaSeleccionada.value = response.data
 		}
 	}
 
@@ -59,13 +71,71 @@ export const useReservas = () => {
 		})
 	}
 
-	const confirmarReserva = async (reserva) => {
-		const response = await postConfirmacion(reserva)
-		return response
+	const confirmarReserva = async () => {
+		const payload = {
+			identificador: reservaSeleccionada.value.identificador,
+			idProg: reservaSeleccionada.value.programacion.identificador,
+			pago: reservaSeleccionada.value.pago,
+		}
+
+		interactividad.value.action = true
+		const response = await postConfirmacion(payload)
+		interactividad.value.action = false
+		if (response.success) {
+			reservaSeleccionada.value.estado = 'confirmado'
+			const indiceReserva = reservas.value.findIndex(
+				(r) => r.identificador === payload.identificador
+			)
+			reservas.value = reservas.value.with(indiceReserva, {
+				...reservas.value[indiceReserva],
+				estado: 'confirmado',
+			})
+			toast.add({
+				severity: 'success',
+				summary: 'Reserva confirmada',
+				detail: response.message,
+				life: 3000,
+			})
+		} else {
+			toast.add({
+				severity: 'error',
+				summary: 'Error al confirmar reserva',
+				detail: response.message,
+				life: 3000,
+			})
+		}
 	}
-	const rechazarReserva = async (reserva) => {
-		const response = await postRechazo(reserva)
-		return response
+	const rechazarReserva = async () => {
+		const payload = {
+			identificador: reservaSeleccionada.value.identificador,
+			idProg: reservaSeleccionada.value.programacion.identificador,
+		}
+		interactividad.value.action = true
+		const response = await postRechazo(payload)
+		interactividad.value.action = false
+		if (response.success) {
+			reservaSeleccionada.value.estado = 'rechazado'
+			const indiceReserva = reservas.value.findIndex(
+				(r) => r.identificador === payload.identificador
+			)
+			reservas.value = reservas.value.with(indiceReserva, {
+				...reservas.value[indiceReserva],
+				estado: 'rechazado',
+			})
+			toast.add({
+				severity: 'success',
+				summary: 'Reserva rechazada',
+				detail: response.message,
+				life: 3000,
+			})
+		} else {
+			toast.add({
+				severity: 'error',
+				summary: 'Error al rechazar reserva',
+				detail: response.message,
+				life: 3000,
+			})
+		}
 	}
 	const registrarReserva = async () => {
 		reserva.value.idProg = horario.value.identificador
@@ -103,6 +173,41 @@ export const useReservas = () => {
 		}
 	}
 
+	const eliminarReserva = async (id) => {
+		const { identificador, programacion } = reservas.value.find(
+			(r) => r.identificador === id
+		)
+		const payload = {
+			identificador,
+			idProg: programacion.identificador,
+		}
+		interactividad.value.action = true
+		const response = await deleteReserva(payload)
+		interactividad.value.action = false
+		if (response.success) {
+			const indiceReserva = reservas.value.findIndex(
+				(r) => r.identificador === id
+			)
+			reservas.value = reservas.value.with(indiceReserva, {
+				...reservas.value[indiceReserva],
+				estado: 'eliminado',
+			})
+			toast.add({
+				severity: 'success',
+				summary: 'Reserva eliminada',
+				detail: response.message,
+				life: 3000,
+			})
+		} else {
+			toast.add({
+				severity: 'error',
+				summary: 'Error al eliminar reserva',
+				detail: response.message,
+				life: 3000,
+			})
+		}
+	}
+
 	const cleanReserva = () => {
 		reservaStore.resetStore()
 	}
@@ -113,6 +218,7 @@ export const useReservas = () => {
 		world,
 		selectedPlace,
 		interactividad,
+		reservaSeleccionada,
 		reservasConfirmadas,
 		reservasPendientes,
 		reservasRechazadas,
@@ -120,9 +226,11 @@ export const useReservas = () => {
 		loadStates,
 		loadCities,
 		loadReservas,
+		loadReserva,
 		registrarReserva,
 		confirmarReserva,
 		rechazarReserva,
 		cleanReserva,
+		eliminarReserva,
 	}
 }

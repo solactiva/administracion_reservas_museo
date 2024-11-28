@@ -1,8 +1,17 @@
 import axios from 'axios'
 
+export const getReserva = async (idReserva) => {
+	try {
+		const response = await axios.get(`/reservas/admin?idReserva=${idReserva}`)
+		return response.data
+	} catch (error) {
+		console.error(error)
+	}
+}
+
 export const getReservas = async (idEvento) => {
 	try {
-		const response = await axios.get(`/reservas?idEvento=${idEvento}`)
+		const response = await axios.get(`/reservas/admin?idEvento=${idEvento}`)
 		return response.data
 	} catch (error) {
 		console.error(error)
@@ -40,6 +49,15 @@ export const postRechazo = async (reserva) => {
 export const postReserva = async (reserva) => {
 	try {
 		const response = await axios.post('/reservas/admin', reserva)
+		return response.data
+	} catch (error) {
+		console.error(error)
+	}
+}
+
+export const deleteReserva = async (reserva) => {
+	try {
+		const response = await axios.post('/reservas/admin/eliminar', reserva)
 		return response.data
 	} catch (error) {
 		console.error(error)

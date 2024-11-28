@@ -24,7 +24,7 @@ const closeDialog = () => {
 
 const actionReservar = async () => {
 	await registrarReserva()
-	await cargarHorarios(dialogRef.value.data.fecha, dialogRef.value.data.id)
 	closeDialog()
+	await cargarHorarios(dialogRef.value.data.fecha, dialogRef.value.data.id)
 }
 </script>
