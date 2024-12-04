@@ -8,7 +8,7 @@ import PrimeVue from 'primevue/config'
 import ToastService from 'primevue/toastservice'
 import ConfirmationService from 'primevue/confirmationservice'
 import DialogService from 'primevue/dialogservice'
-import Aura from '@primevue/themes/aura'
+import customTheme from '@/config/custom-theme'
 import App from './App.vue'
 import pinia from './stores'
 import router from './router'
@@ -188,7 +188,7 @@ app.use(PrimeVue, {
 		},
 	},
 	theme: {
-		preset: Aura,
+		preset: customTheme,
 		options: {
 			prefix: 'p',
 			darkModeSelector: '.dark',
