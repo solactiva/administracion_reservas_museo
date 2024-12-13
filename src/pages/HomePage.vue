@@ -63,6 +63,13 @@
 			<template #end>
 				<div class="flex items-center">
 					<Button
+						:icon="icon"
+						iconPos="right"
+						@click="toggleTheme"
+						rounded
+						text
+					/>
+					<Button
 						icon="pi pi-user"
 						@click="userMenu"
 						severity="contrast"
@@ -167,7 +174,20 @@ const items = ref([
 		icon: 'pi pi-calendar',
 		route: '/programaciones',
 	},
+	{
+		label: 'Reportes',
+		icon: 'pi pi-chart-bar',
+		route: '/reportes',
+	},
 ])
+
+const icon = ref('pi pi-moon')
+
+const toggleTheme = () => {
+	const theme = document.querySelector('html')
+	theme.classList.toggle('p-dark')
+	icon.value = icon.value === 'pi pi-moon' ? 'pi pi-sun' : 'pi pi-moon'
+}
 
 watch(itemsReservas, (value) => {
 	items.value[1].items = value

@@ -1,49 +1,43 @@
 <template>
-	<Accordion value="0" class="mb-5">
-		<AccordionPanel value="0">
-			<AccordionHeader>Registrar reserva</AccordionHeader>
-			<AccordionContent>
-				<div class="grid grid-cols-1 md:grid-cols-2">
-					<div class="flex justify-center mb-5 md:mb-0">
-						<DatePicker
-							inline
-							v-model="fechaSeleccionada"
-							:disabled-days="evento?.diasNoActivo"
-							:minDate="new Date()"
-							@update:modelValue="actualizarHorarios"
-						/>
-					</div>
-					<div class="grid grid-cols-2 gap-4 justify-center" v-if="action">
-						<Skeleton
-							width="100%"
-							height="5rem"
-							v-for="index in 6"
-							:key="index"
-						></Skeleton>
-					</div>
-					<div class="grid grid-cols-2 gap-4 justify-center" v-else>
-						<template
-							v-for="elHorario in horarios"
-							:key="elHorario.identificador"
-						>
-							<Button
-								severity="secondary"
-								class="flex flex-col items-center"
-								@click="registrarDatosReserva(elHorario.identificador)"
-							>
-								<div class="text-center font-semibold text-xl">
-									{{ `${elHorario.inicioEvento} - ${elHorario.finEvento}` }}
-								</div>
-								<div class="text-center text-sm">
-									{{ elHorario.spots }} disponibles
-								</div>
-							</Button>
-						</template>
-					</div>
-				</div>
-			</AccordionContent>
-		</AccordionPanel>
-	</Accordion>
+	<div class="my-5 text-xl text-primary font-bold">Registrar Reservas</div>
+	<Panel toggleable class="mb-5">
+		<template #header><div></div></template>
+		<div class="grid grid-cols-1 md:grid-cols-2">
+			<div class="flex justify-center mb-5 md:mb-0">
+				<DatePicker
+					inline
+					v-model="fechaSeleccionada"
+					:disabled-days="evento?.diasNoActivo"
+					:minDate="new Date()"
+					@update:modelValue="actualizarHorarios"
+				/>
+			</div>
+			<div class="grid grid-cols-2 gap-4 justify-center" v-if="action">
+				<Skeleton
+					width="100%"
+					height="5rem"
+					v-for="index in 6"
+					:key="index"
+				></Skeleton>
+			</div>
+			<div class="grid grid-cols-2 gap-4 justify-center" v-else>
+				<template v-for="elHorario in horarios" :key="elHorario.identificador">
+					<Button
+						severity="secondary"
+						class="flex flex-col items-center"
+						@click="registrarDatosReserva(elHorario.identificador)"
+					>
+						<div class="text-center font-semibold text-xl">
+							{{ `${elHorario.inicioEvento} - ${elHorario.finEvento}` }}
+						</div>
+						<div class="text-center text-sm">
+							{{ elHorario.spots }} disponibles
+						</div>
+					</Button>
+				</template>
+			</div>
+		</div>
+	</Panel>
 	<Tabs value="0">
 		<TabList>
 			<Tab v-for="(tab, index) in itemsTabs" :key="index" :value="tab.value">
@@ -71,6 +65,7 @@ import { useEventos } from '@/composables/useEventos'
 import { useHorarios } from '@/composables/useHorarios'
 import { useReservas } from '@/composables/useReservas'
 import { useDialog } from 'primevue/usedialog'
+import { Panel } from 'primevue'
 
 const ReservaForm = defineAsyncComponent(() =>
 	import('@/components/Reservas/ReservaForm.vue')

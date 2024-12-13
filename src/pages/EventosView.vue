@@ -4,7 +4,7 @@
 			<h1 class="text-xl text-primary font-bold">Eventos</h1>
 			<Button
 				icon="pi pi-plus"
-				variant="text"
+				outlined
 				size="small"
 				v-tooltip="'Crear nuevo evento'"
 				@click="actionCrearEvento()"
@@ -37,14 +37,17 @@
 			>
 				<template #header>
 					<div
-						class="h-full text-end"
-						:class="el.activo ? 'bg-green-200' : ' bg-slate-200'"
+						class="h-full text-end flex flex-row justify-between items-center"
 					>
+						<div
+							class="pl-3 font-semibold flex items-center gap-1"
+							:class="el.activo ? ' text-green-500' : 'text-slate-600'"
+						>
+							<li class="pi pi-circle-fill"></li>
+							{{ el.activo ? 'Activado' : 'Desactivado' }}
+						</div>
 						<Button
 							icon="pi pi-cog"
-							class="text-primary-950"
-							:class="el.activo ? 'hover:bg-green-300' : 'hover:bg-slate-300'"
-							severity="secondary"
 							text
 							rounded
 							@click="toggle($event, el.identificador)"
@@ -67,7 +70,7 @@
 		<div class="flex flex-col gap-1 p-0">
 			<Button
 				icon="pi pi-pencil"
-				class="text-primary-950 hover:bg-gray-100 text-sm justify-start"
+				class="text-sm justify-start"
 				label="Actualizar"
 				text
 				rounded
@@ -75,7 +78,7 @@
 			/>
 			<Button
 				icon="pi pi-clock"
-				class="text-primary-950 hover:bg-gray-100 text-sm justify-start text-start"
+				class="text-sm justify-start text-start"
 				label="Generar Programación"
 				text
 				rounded
@@ -84,8 +87,9 @@
 			<Divider type="dashed" class="m-0" />
 			<Button
 				icon="pi pi-trash"
-				class="bg-red-100 text-red-600 hover:bg-red-200 text-sm justify-start"
+				class="text-sm justify-start"
 				label="Eliminar"
+				severity="danger"
 				text
 				rounded
 				@click="confirmDelete(selectedId)"

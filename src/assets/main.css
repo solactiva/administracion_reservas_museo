@@ -8,3 +8,115 @@
 	@tailwind components;
 	@tailwind utilities;
 }
+
+.p-dark {
+	background-color: var(--ground-background);
+}
+
+:root {
+	--home-box-ring-color: var(--p-primary-200);
+	--home-card-shadow: 0px 7px 15px 0px rgba(0, 0, 0, 0.02),
+		0px 28px 28px 0px rgba(0, 0, 0, 0.02), 0px 63px 38px 0px rgba(0, 0, 0, 0.01);
+	--home-templates-block-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.1);
+	--home-templates-line: rgba(0, 0, 0, 0.1);
+	--home-templates-block-hover-bg: var(--p-mask-background);
+	--home-blocks-block-shadow: -10px 4px 10px 0px rgba(0, 0, 0, 0.1),
+		-10px 4px 25px rgba(0, 0, 0, 0.1);
+	--home-blocks-sidebar-bg: var(--p-surface-100);
+	--home-blocks-list-bg: var(--p-surface-50);
+	--home-blocks-main-bg: var(--p-surface-0);
+	--home-blocks-item-bg: var(--p-surface-100);
+	--home-blocks-image-bg: var(--p-surface-200);
+	--home-blocks-text-color: var(--p-surface-300);
+	--home-blocks-tablebar-bg: var(--p-surface-300);
+	--home-blocks-bar-bg: var(--p-surface-300);
+	--home-blocks-bar-button-bg: var(--p-surface-0);
+	--home-blocks-circle-bg: var(--p-surface-300);
+}
+
+:root[class='p-dark'] {
+	--home-box-ring-color: color-mix(
+		in srgb,
+		var(--primary-color),
+		transparent 70%
+	);
+	--home-card-shadow: 0px 50px 100px rgba(0, 0, 0, 0.25);
+	--home-templates-block-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.25);
+	--home-templates-line: hsla(0, 0%, 100%, 0.1);
+	--home-templates-block-hover-bg: var(--p-mask-background);
+	--home-blocks-block-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.25),
+		0px 4px 25px rgba(0, 0, 0, 0.25);
+	--home-blocks-sidebar-bg: var(--p-surface-900);
+	--home-blocks-list-bg: var(--p-surface-800);
+	--home-blocks-main-bg: var(--p-surface-950);
+	--home-blocks-item-bg: var(--p-surface-900);
+	--home-blocks-image-bg: var(--p-surface-800);
+	--home-blocks-text-color: var(--p-surface-600);
+	--home-blocks-tablebar-bg: var(--p-surface-700);
+	--home-blocks-bar-bg: var(--p-surface-700);
+	--home-blocks-bar-button-bg: var(--p-surface-700);
+	--home-blocks-circle-bg: var(--p-surface-800);
+}
+
+:root {
+	--primary-text-color: var(--p-primary-600);
+	--primary-color: var(--p-primary-color);
+	--primary-contrast-color: var(--p-primary-contrast-color);
+	--primary-hover-color: var(--p-primary-hover-color);
+	--text-color: var(--p-surface-700);
+	--text-secondary-color: var(--p-surface-500);
+	--glow-image: url(https://www.primefaces.org/cdn/primevue/images/layout/pattern.png);
+	--glow-blend: hard-light, multiply;
+	--topbar-sticky-background: hsla(0, 0%, 100%, 0.7);
+	--mobile-menu-background: #fff;
+	--card-border: 1px solid var(--p-surface-200);
+	--card-background: #fff;
+	--border-color: var(--p-surface-200);
+	--ground-background: var(--p-surface-50);
+	--overlay-background: #fff;
+	--hover-background: var(--p-surface-100);
+	--code-background: var(--p-surface-950);
+	--high-contrast-text-color: var(--p-surface-900);
+	--hover-border-color: var(--p-surface-400);
+	--mark-background: var(--p-surface-200);
+	--mark-text-color: var(--p-surface-700);
+	--selection-background: var(--p-surface-200);
+	--selection-text-color: var(--p-surface-950);
+	--code-button-text-color: var(--p-surface-300);
+	--docsearch-mask-background: var(--p-mask-background);
+	--logo-color: var(--text-secondary-color);
+}
+
+:root[class='p-dark'] {
+	--primary-text-color: var(--p-primary-400);
+	--primary-color: var(--p-primary-color);
+	--primary-contrast-color: var(--p-primary-contrast-color);
+	--primary-hover-color: var(--p-primary-hover-color);
+	--text-color: var(--p-surface-0);
+	--text-secondary-color: var(--p-surface-400);
+	--glow-image: url(https://www.primefaces.org/cdn/primevue/images/layout/pattern.png),
+		radial-gradient(
+			50% 50% at center -25px,
+			var(--p-primary-color) 0%,
+			#000 100%
+		);
+	--glow-blend: hard-light, color-dodge;
+	--topbar-sticky-background: rgba(0, 0, 0, 0.3);
+	--mobile-menu-background: rgba(0, 0, 0, 0.3);
+	--card-border: 1px solid transparent;
+	--card-background: var(--p-surface-900);
+	--border-color: var(--p-surface-700);
+	--ground-background: var(--p-surface-950);
+	--overlay-background: var(--p-surface-900);
+	--hover-background: var(--p-surface-800);
+	--code-background: var(--p-surface-900);
+	--high-contrast-text-color: var(--p-surface-0);
+	--hover-border-color: var(--p-surface-500);
+	--mark-background: var(--p-surface-700);
+	--mark-text-color: var(--p-surface-200);
+	--selection-background: var(--p-surface-700);
+	--selection-text-color: var(--p-surface-0);
+	--code-button-text-color: var(--p-surface-300);
+	--docsearch-mask-background: var(--p-mask-background);
+	--logo-color: var(--text-secondary-color);
+}
