@@ -34,6 +34,11 @@ const routes = [
 				component: () => import('@/pages/ReportesView.vue'),
 			},
 			{
+				path: '/default',
+				name: 'ReporteDefault',
+				component: () => import('@/pages/ReporteDefaultView.vue'),
+			},
+			{
 				path: '/configuracion',
 				name: 'Configuracion',
 				component: () => import('@/pages/ConfiguracionPage.vue'),
