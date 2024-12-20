@@ -1,145 +1,165 @@
 <template>
 	<div class="flex flex-col gap-5">
 		<div class="mt-5">
-			<Card header="Reporte">
-				<template #title>Formulario de reporte</template>
-				<template #content>
-					<div>
-						<Form
-							v-slot="$form"
-							:resolver="resolver"
-							:initialValues="busqueda"
-							@submit="buscar"
-							class="flex flex-col gap-4 w-full xl:w-1/2"
+			<Panel toggleable header="Filtros de Búsqueda" class="w-full">
+				<Form
+					v-slot="$form"
+					:resolver="resolver"
+					:initialValues="busqueda"
+					@submit="buscar"
+					class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full"
+				>
+					<div class="flex flex-col gap-1">
+						<label for="nombreCompleto" class="font-medium"
+							>Rango de Fechas</label
 						>
-							<div class="grid grid-cols-2 gap-4">
-								<div class="flex flex-col gap-1">
-									<label for="nombreCompleto" class="font-medium"
-										>Primera Gestión</label
-									>
-									<DatePicker
-										v-model="busqueda.gestionUno"
-										selectionMode="range"
-										:manualInput="false"
-									/>
-									<small class="text-xs text-gray-500"
-										>Rango de fechas para reporte.
-									</small>
-									<Message
-										v-if="$form.gestionUno?.invalid"
-										severity="error"
-										size="small"
-										variant="simple"
-										>{{ $form.gestionUno.error?.message }}</Message
-									>
-								</div>
-								<div class="flex flex-col gap-1">
-									<label for="nombreCompleto" class="font-medium"
-										>Segunda Gestión</label
-									>
-									<DatePicker
-										v-model="busqueda.gestionDos"
-										selectionMode="range"
-										:manualInput="false"
-									/>
-									<small class="text-xs text-gray-500"
-										>Segundo rango de fechas para comparación.
-									</small>
-									<Message
-										v-if="$form.gestionDos?.invalid"
-										severity="error"
-										size="small"
-										variant="simple"
-										>{{ $form.gestionDos.error?.message }}</Message
-									>
-								</div>
-							</div>
-							<div class="flex flex-col gap-1">
-								<label for="nombreCompleto" class="font-medium"
-									>Tipo de Evento</label
-								>
-								<Select
-									v-model="busqueda.evento"
-									:options="eventos"
-									optionLabel="name"
-									placeholder="Seleccione un evento"
-								/>
-								<small class="text-xs text-gray-500"
-									>Seleccione un evento para filtrar.
-								</small>
-								<Message
-									v-if="$form.evento?.invalid"
-									severity="error"
-									size="small"
-									variant="simple"
-									>{{ $form.evento.error?.message }}</Message
-								>
-							</div>
-							<div class="flex flex-col gap-1">
-								<label for="nombreCompleto" class="font-medium"
-									>Tipo de Segmento</label
-								>
-								<Select
-									v-model="busqueda.segmento"
-									:options="segmentos"
-									optionLabel="name"
-									placeholder="Seleccione un evento"
-								/>
-								<small class="text-xs text-gray-500"
-									>Seleccione un segmento para filtrar.
-								</small>
-								<Message
-									v-if="$form.segmento?.invalid"
-									severity="error"
-									size="small"
-									variant="simple"
-									>{{ $form.segmento.error?.message }}</Message
-								>
-							</div>
-							<Button type="submit" label="Buscar" icon="pi pi-search" />
-						</Form>
+						<DatePicker
+							name="gestionUno"
+							v-model="busqueda.gestionUno"
+							selectionMode="range"
+							:manualInput="false"
+						/>
+						<small class="text-xs text-gray-500"
+							>Rango de fechas para generar el reporte.
+						</small>
+						<Message
+							v-if="$form.gestionUno?.invalid"
+							severity="error"
+							size="small"
+							variant="simple"
+							>{{ $form.gestionUno.error?.message }}</Message
+						>
 					</div>
-				</template>
-			</Card>
+					<div class="flex flex-col gap-1">
+						<label for="nombreCompleto" class="font-medium"
+							>Fechas de Comparación</label
+						>
+						<DatePicker
+							name="gestionDos"
+							v-model="busqueda.gestionDos"
+							selectionMode="range"
+							:manualInput="false"
+							:disabled="busqueda.gestionUno.length === 0"
+						/>
+						<small class="text-xs text-gray-500"
+							>Rango de fechas para comparación.
+						</small>
+						<Message
+							v-if="$form.gestionDos?.invalid"
+							severity="error"
+							size="small"
+							variant="simple"
+							>{{ $form.gestionDos.error?.message }}</Message
+						>
+					</div>
+					<div class="flex flex-col gap-1">
+						<label for="nombreCompleto" class="font-medium"
+							>Tipo de Evento</label
+						>
+						<Select
+							name="evento"
+							v-model="busqueda.evento"
+							:options="eventos"
+							optionLabel="nombre"
+							optionValue="identificador"
+							placeholder="Seleccione un evento"
+						/>
+						<small class="text-xs text-gray-500"
+							>Si no selecciona un evento se tomarán todos los eventos.
+						</small>
+						<Message
+							v-if="$form.evento?.invalid"
+							severity="error"
+							size="small"
+							variant="simple"
+							>{{ $form.evento.error?.message }}</Message
+						>
+					</div>
+					<div class="flex flex-col gap-1">
+						<label for="nombreCompleto" class="font-medium"
+							>Tipo de Segmento</label
+						>
+						<Select
+							name="segmento"
+							v-model="busqueda.segmento"
+							:options="
+								eventos.find((e) => e.identificador === busqueda.evento)
+									?.precios
+							"
+							optionLabel="tipo"
+							optionValue="tipo"
+							placeholder="Seleccione un evento"
+							:disabled="!busqueda.evento"
+						/>
+						<small class="text-xs text-gray-500"
+							>Si no se selecciona un segmento se mostrarán todos.
+						</small>
+						<Message
+							v-if="$form.segmento?.invalid"
+							severity="error"
+							size="small"
+							variant="simple"
+							>{{ $form.segmento.error?.message }}</Message
+						>
+					</div>
+					<Button type="submit" label="Buscar" icon="pi pi-search" outlined />
+					<Button
+						type="button"
+						label="Limpiar"
+						icon="pi pi-eraser"
+						severity="secondary"
+						outlined
+						@click="limpiar"
+					/>
+				</Form>
+			</Panel>
 		</div>
-		<div>
-			<Card>
-				<template #content>
-					<DataTable
-						:value="dataFetch"
-						showGridlines
-						tableStyle="min-width: 50rem;"
-					>
-						<ColumnGroup type="header">
-							<Row>
-								<Column header="Segmento" :rowspan="2" />
-								<Column header="1ra Gestion" :colspan="2" />
-								<Column header="2da Gestion" :colspan="2" />
+		<div class="mb-5">
+			<Panel>
+				<template #icons>
+					<Button
+						icon="pi pi-file-pdf"
+						label="Exportar PDF"
+						size="small"
+						text
+					/>
+				</template>
+				<DataTable :value="filteredData" tableStyle="min-width: 50rem;">
+					<ColumnGroup type="header">
+						<Row>
+							<Column header="Segmento" :rowspan="2" />
+							<Column header="Primer Periodo" :colspan="2" />
+							<template v-if="compare">
+								<Column header="Segundo Periodo" :colspan="2" />
 								<Column header="Dif." :colspan="4" />
-							</Row>
-							<Row>
-								<Column header="Cantidad" field="cantidadGestion1" />
-								<Column header="Importe neto" field="importeGestion1" />
+							</template>
+						</Row>
+						<Row>
+							<Column header="Cantidad" field="cantidadGestion1" />
+							<Column header="Importe neto" field="importeGestion1" />
+							<template v-if="compare">
 								<Column header="Cantidad" field="cantidadGestion2" />
 								<Column header="Importe neto" field="importeGestion2" />
 								<Column header="Cantidad" field="cantidadDifGestion1" />
 								<Column header="%" field="porcentajeDifGestion1" />
 								<Column header="Importe neto" field="cantidadDifGestion2" />
 								<Column header="%" field="porcentajeDifGestion2" />
-							</Row>
-						</ColumnGroup>
-						<Column field="segmento" />
-						<Column field="cantidadGestion1" />
-						<Column field="importeGestion1" />
+							</template>
+						</Row>
+					</ColumnGroup>
+					<Column field="segmento" />
+					<Column field="cantidadGestion1" />
+					<Column field="importeGestion1" />
+					<template v-if="compare">
 						<Column field="cantidadGestion2" />
 						<Column field="importeGestion2" />
 						<Column field="cantidadDifGestion1" />
 						<Column field="porcentajeDifGestion1" />
 						<Column field="cantidadDifGestion2" />
 						<Column field="porcentajeDifGestion2" />
-					</DataTable>
-				</template>
-			</Card>
+					</template>
+				</DataTable>
+			</Panel>
 		</div>
 	</div>
 </template>
@@ -147,56 +167,48 @@
 import { ref } from 'vue'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { z } from 'zod'
+import { useEventos } from '@/composables/useEventos'
+import { useReportes } from '@/composables/useReportes'
 
-const dataFetch = ref([
-	{
-		segmento: 'Segmento 1',
-		cantidadGestion1: 10,
-		importeGestion1: 1000,
-		cantidadGestion2: 20,
-		importeGestion2: 2000,
-		cantidadDifGestion1: 10,
-		porcentajeDifGestion1: 100,
-		cantidadDifGestion2: 20,
-		porcentajeDifGestion2: 100,
-	},
-	{
-		segmento: 'Segmento 2',
-		cantidadGestion1: 20,
-		importeGestion1: 2000,
-		cantidadGestion2: 40,
-		importeGestion2: 4000,
-		cantidadDifGestion1: 20,
-		porcentajeDifGestion1: 100,
-		cantidadDifGestion2: 40,
-		porcentajeDifGestion2: 100,
-	},
-])
+const { eventos } = useEventos()
+const { filteredData, generarReporte } = useReportes()
+
+const busqueda = ref({
+	gestionUno: [],
+	gestionDos: [],
+	evento: null,
+	segmento: null,
+})
+
+const compare = ref(false)
+
+const limpiar = () => {
+	busqueda.value = {
+		gestionUno: [],
+		gestionDos: [],
+		evento: null,
+		segmento: null,
+	}
+	filteredData.value = []
+	compare.value = false
+}
 
 const resolver = ref(
 	zodResolver(
 		z.object({
-			eventos: z.array(z.object({ name: z.string(), code: z.string() })),
+			gestionUno: z
+				.array(z.date(), { message: 'Debe seleccionar un rango de fechas' })
+				.min(2, { message: 'Debe seleccionar un rango de fechas' })
+				.nonempty({ message: 'Debe seleccionar un rango de fechas' }),
 		})
 	)
 )
 
-const busqueda = ref({})
-
-const eventos = ref([
-	{ name: 'Evento 1', code: '1' },
-	{ name: 'Evento 2', code: '2' },
-	{ name: 'Evento 3', code: '3' },
-])
-
-const segmentos = ref([
-	{ name: 'Segmento 1', code: '1' },
-	{ name: 'Segmento 2', code: '2' },
-	{ name: 'Segmento 3', code: '3' },
-])
-
-const buscar = ({ valid }) => {
+const buscar = async ({ valid }) => {
 	if (!valid) return
-	console.log('Buscando...')
+	await generarReporte(busqueda.value)
+	if (busqueda.value.gestionDos.length > 0) {
+		compare.value = true
+	}
 }
 </script>
