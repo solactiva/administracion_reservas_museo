@@ -122,9 +122,15 @@
 						label="Exportar PDF"
 						size="small"
 						text
+						:disabled="filteredData.length === 0"
+						@click="exportarPDF"
 					/>
 				</template>
-				<DataTable :value="filteredData" tableStyle="min-width: 50rem;">
+				<DataTable
+					:value="filteredData"
+					tableStyle="min-width: 50rem;"
+					showGridlines
+				>
 					<ColumnGroup type="header">
 						<Row>
 							<Column header="Segmento" :rowspan="2" />
@@ -140,10 +146,10 @@
 							<template v-if="compare">
 								<Column header="Cantidad" field="cantidadGestion2" />
 								<Column header="Importe neto" field="importeGestion2" />
-								<Column header="Cantidad" field="cantidadDifGestion1" />
-								<Column header="%" field="porcentajeDifGestion1" />
-								<Column header="Importe neto" field="cantidadDifGestion2" />
-								<Column header="%" field="porcentajeDifGestion2" />
+								<Column header="Cantidad" field="diferenciaCantidad" />
+								<Column header="%" field="porcentajeCantidad" />
+								<Column header="Importe neto" field="diferenciaImporte" />
+								<Column header="%" field="porcentajeImporte" />
 							</template>
 						</Row>
 					</ColumnGroup>
@@ -153,10 +159,14 @@
 					<template v-if="compare">
 						<Column field="cantidadGestion2" />
 						<Column field="importeGestion2" />
-						<Column field="cantidadDifGestion1" />
-						<Column field="porcentajeDifGestion1" />
-						<Column field="cantidadDifGestion2" />
-						<Column field="porcentajeDifGestion2" />
+						<Column>
+							<template #body="{ data }">
+								{{ data.cantidadGestion1 - data.cantidadGestion2 }}
+							</template>
+						</Column>
+						<Column field="porcentajeCantidad" />
+						<Column field="diferenciaImporte" />
+						<Column field="porcentajeImporte" />
 					</template>
 				</DataTable>
 			</Panel>
@@ -171,7 +181,7 @@ import { useEventos } from '@/composables/useEventos'
 import { useReportes } from '@/composables/useReportes'
 
 const { eventos } = useEventos()
-const { filteredData, generarReporte } = useReportes()
+const { filteredData, generarReporte, downloadReporte } = useReportes()
 
 const busqueda = ref({
 	gestionUno: [],
@@ -210,5 +220,9 @@ const buscar = async ({ valid }) => {
 	if (busqueda.value.gestionDos.length > 0) {
 		compare.value = true
 	}
+}
+
+const exportarPDF = () => {
+	downloadReporte(filteredData.value, compare.value, busqueda.value)
 }
 </script>

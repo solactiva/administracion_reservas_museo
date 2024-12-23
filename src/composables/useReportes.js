@@ -1,4 +1,4 @@
-import { getDatosReporte } from '@/services/reportesService'
+import { getDatosReporte, generatePdfReport } from '@/services/reportesService'
 import { ref } from 'vue'
 
 export const useReportes = () => {
@@ -65,15 +65,43 @@ export const useReportes = () => {
 			...resAnterior[item.segmento],
 		}))
 
-		console.log(res)
-
 		filteredData.value = segmento
 			? res.filter((item) => item.segmento === segmento)
 			: res
+
+		filteredData.value = filteredData.value.map((item) => ({
+			...item,
+			diferenciaCantidad: item.cantidadGestion1 - item.cantidadGestion2,
+			porcentajeCantidad:
+				((item.cantidadGestion1 - item.cantidadGestion2) /
+					item.cantidadGestion2) *
+				100,
+			diferenciaImporte: item.importeGestion1 - item.importeGestion2,
+			porcentajeImporte:
+				((item.importeGestion1 - item.importeGestion2) / item.importeGestion2) *
+				100,
+		}))
+	}
+
+	const downloadReporte = (data, compare, search) => {
+		const json = {
+			search,
+			data,
+			compare,
+		}
+		generatePdfReport(json).then((response) => {
+			const url = window.URL.createObjectURL(new Blob([response]))
+			const link = document.createElement('a')
+			link.href = url
+			link.setAttribute('download', 'reporte.pdf')
+			document.body.appendChild(link)
+			link.click()
+		})
 	}
 
 	return {
 		filteredData,
 		generarReporte,
+		downloadReporte,
 	}
 }
