@@ -32,10 +32,13 @@
 			<div>
 				<label for="precio-evento">Precios:</label>
 				<InputGroup>
-					<InputText
+					<Select
 						v-model="precio.tipo"
-						placeholder="Tipo"
 						class="h-8 w-2/3"
+						:options="tipoVisitantes"
+						placeholder="Seleccionar tipo..."
+						optionValue="nombre"
+						optionLabel="nombre"
 					/>
 					<InputNumber v-model="precio.precio" class="h-8 w-1/3" />
 					<Button
@@ -47,7 +50,7 @@
 				</InputGroup>
 			</div>
 			<InputGroup v-for="(el, index) in eventoSelected.precios" :key="index">
-				<InputText v-model="el.tipo" placeholder="Tipo" class="h-8 w-2/3" />
+				<InputGroupAddon class="h-8 w-2/3">{{ el.tipo }}</InputGroupAddon>
 				<InputNumber v-model="el.precio" class="h-8 w-1/3" />
 				<Button
 					icon="pi pi-trash"
@@ -76,9 +79,11 @@
 	</div>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useEventos } from '@/composables/useEventos'
+import { useTipoVisitantes } from '@/composables/useTipoVisitantes'
 
+const { tipoVisitantes, fetchTipoVisitantes } = useTipoVisitantes()
 const { eventoSelected } = useEventos()
 
 const semana = ref([
@@ -100,4 +105,8 @@ const agregarPrecio = () => {
 	eventoSelected.value.precios.push({ ...precio.value })
 	precio.value = { tipo: '', precio: 0 }
 }
+
+onMounted(() => {
+	fetchTipoVisitantes()
+})
 </script>

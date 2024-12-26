@@ -19,6 +19,11 @@ const routes = [
 				component: () => import('@/pages/EventosView.vue'),
 			},
 			{
+				path: '/tipo-visitantes',
+				name: 'TipoVisitantes',
+				component: () => import('@/pages/TipoVisitantesView.vue'),
+			},
+			{
 				path: '/reservas/:idEvento',
 				name: 'Reservas',
 				component: () => import('@/pages/ReservasView.vue'),

@@ -165,6 +165,11 @@ const items = ref([
 		route: '/eventos',
 	},
 	{
+		label: 'Tipo de Visitantes',
+		icon: 'pi pi-users',
+		route: '/tipo-visitantes',
+	},
+	{
 		label: 'Reservas',
 		icon: 'pi pi-book',
 		items: [],
@@ -190,7 +195,7 @@ const toggleTheme = () => {
 }
 
 watch(itemsReservas, (value) => {
-	items.value[1].items = value
+	items.value[2].items = value
 })
 
 onMounted(async () => {
