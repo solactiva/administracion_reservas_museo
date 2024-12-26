@@ -4,6 +4,7 @@ import { ref } from 'vue'
 export const useReportes = () => {
 	const dataReporte = ref(null)
 	const filteredData = ref([])
+	const loading = ref(false)
 
 	const generarReporte = async (json) => {
 		const { segmento } = json
@@ -89,7 +90,11 @@ export const useReportes = () => {
 			data,
 			compare,
 		}
+
+		loading.value = true
+
 		generatePdfReport(json).then((response) => {
+			loading.value = false
 			const url = window.URL.createObjectURL(new Blob([response]))
 			const link = document.createElement('a')
 			link.href = url
@@ -101,6 +106,7 @@ export const useReportes = () => {
 
 	return {
 		filteredData,
+		loading,
 		generarReporte,
 		downloadReporte,
 	}

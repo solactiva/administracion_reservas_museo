@@ -122,7 +122,8 @@
 						label="Exportar PDF"
 						size="small"
 						text
-						:disabled="filteredData.length === 0"
+						:disabled="filteredData.length === 0 || loading"
+						:loading="loading"
 						@click="exportarPDF"
 					/>
 				</template>
@@ -159,29 +160,45 @@
 					<template v-if="compare">
 						<Column field="cantidadGestion2" />
 						<Column field="importeGestion2" />
-						<Column>
+						<Column field="diferenciaCantidad" />
+						<Column field="porcentajeCantidad">
 							<template #body="{ data }">
-								{{ data.cantidadGestion1 - data.cantidadGestion2 }}
+								{{ data.porcentajeCantidad.toFixed(2) }}
 							</template>
 						</Column>
-						<Column field="porcentajeCantidad" />
 						<Column field="diferenciaImporte" />
-						<Column field="porcentajeImporte" />
+						<Column>
+							<template #body="{ data }">
+								{{ data.porcentajeImporte.toFixed(2) }}
+							</template>
+						</Column>
 					</template>
+					<ColumnGroup type="footer">
+						<Row>
+							<Column footer="Totales:" footerStyle="text-align:right" />
+							<Column :footer="totalCantidadPeriodoUno" />
+							<Column :footer="totalImportePeriodoUno" />
+							<template v-if="compare">
+								<Column :footer="totalCantidadPeriodoDos" />
+								<Column :footer="totalImportePeriodoDos" />
+								<Column colspan="4" />
+							</template>
+						</Row>
+					</ColumnGroup>
 				</DataTable>
 			</Panel>
 		</div>
 	</div>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { z } from 'zod'
 import { useEventos } from '@/composables/useEventos'
 import { useReportes } from '@/composables/useReportes'
 
 const { eventos } = useEventos()
-const { filteredData, generarReporte, downloadReporte } = useReportes()
+const { filteredData, loading, generarReporte, downloadReporte } = useReportes()
 
 const busqueda = ref({
 	gestionUno: [],
@@ -225,4 +242,26 @@ const buscar = async ({ valid }) => {
 const exportarPDF = () => {
 	downloadReporte(filteredData.value, compare.value, busqueda.value)
 }
+
+const totalCantidadPeriodoUno = computed(() => {
+	return filteredData.value.reduce(
+		(acc, item) => acc + item.cantidadGestion1,
+		0
+	)
+})
+
+const totalImportePeriodoUno = computed(() => {
+	return filteredData.value.reduce((acc, item) => acc + item.importeGestion1, 0)
+})
+
+const totalCantidadPeriodoDos = computed(() => {
+	return filteredData.value.reduce(
+		(acc, item) => acc + item.cantidadGestion2,
+		0
+	)
+})
+
+const totalImportePeriodoDos = computed(() => {
+	return filteredData.value.reduce((acc, item) => acc + item.importeGestion2, 0)
+})
 </script>
