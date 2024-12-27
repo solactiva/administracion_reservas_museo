@@ -21,3 +21,15 @@ export const generatePdfReport = async (json) => {
 		console.error(error)
 	}
 }
+
+export const generateXlsReport = async (json) => {
+	try {
+		const dataStr = JSON.stringify(json)
+		const response = await axios.get(`/xlsReport?parametros=${dataStr}`, {
+			responseType: 'blob',
+		})
+		return response.data
+	} catch (error) {
+		console.error(error)
+	}
+}

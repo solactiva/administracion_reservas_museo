@@ -1,13 +1,23 @@
-import { getDatosReporte, generatePdfReport } from '@/services/reportesService'
+import {
+	getDatosReporte,
+	generatePdfReport,
+	generateXlsReport,
+} from '@/services/reportesService'
+import { getTipoVisitantes } from '@/services/tipoVisitanteService'
 import { ref } from 'vue'
 
 export const useReportes = () => {
 	const dataReporte = ref(null)
+	const tiposPrecio = ref(null)
 	const filteredData = ref([])
 	const loading = ref(false)
 
 	const generarReporte = async (json) => {
 		const { segmento } = json
+
+		const resTiposPrecio = await getTipoVisitantes()
+		if (!resTiposPrecio.success) return
+		tiposPrecio.value = resTiposPrecio.data
 
 		const response = await getDatosReporte(json)
 		if (!response.success) return
@@ -15,13 +25,18 @@ export const useReportes = () => {
 
 		const resActual = dataReporte.value.actual
 			.flatMap((item) => {
-				const precios = item.evento.precios
-				return [...item.cantidad, ...(item.cantidadAdicional || [])].map(
-					(entry) => ({
-						...entry,
-						precio: precios.find((p) => p.tipo === entry.tipo)?.precio || 0,
-					})
-				)
+				const precios = item.evento?.precios || []
+				return [
+					...(item.cantidad || []),
+					...(item.cantidadAdicional || []),
+					...tiposPrecio.value.map((el) => ({
+						tipo: el.nombre,
+						cantidad: 0,
+					})),
+				].map((entry) => ({
+					...entry,
+					precio: precios.find((p) => p.tipo === entry.tipo)?.precio || 0,
+				}))
 			})
 			.reduce((acc, { tipo, cantidad, precio }) => {
 				if (!acc[tipo]) {
@@ -39,13 +54,18 @@ export const useReportes = () => {
 		const resAnterior = dataReporte.value.anterior
 			? dataReporte.value.anterior
 					.flatMap((item) => {
-						const precios = item.evento.precios
-						return [...item.cantidad, ...(item.cantidadAdicional || [])].map(
-							(entry) => ({
-								...entry,
-								precio: precios.find((p) => p.tipo === entry.tipo)?.precio || 0,
-							})
-						)
+						const precios = item.evento?.precios || []
+						return [
+							...(item.cantidad || []),
+							...(item.cantidadAdicional || []),
+							...tiposPrecio.value.map((el) => ({
+								tipo: el.nombre,
+								cantidad: 0,
+							})),
+						].map((entry) => ({
+							...entry,
+							precio: precios.find((p) => p.tipo === entry.tipo)?.precio || 0,
+						}))
 					})
 					.reduce((acc, { tipo, cantidad, precio }) => {
 						if (!acc[tipo]) {
@@ -74,13 +94,18 @@ export const useReportes = () => {
 			...item,
 			diferenciaCantidad: item.cantidadGestion1 - item.cantidadGestion2,
 			porcentajeCantidad:
-				((item.cantidadGestion1 - item.cantidadGestion2) /
-					item.cantidadGestion2) *
-				100,
+				item.cantidadGestion2 === 0
+					? 0
+					: ((item.cantidadGestion1 - item.cantidadGestion2) /
+							item.cantidadGestion2) *
+					  100,
 			diferenciaImporte: item.importeGestion1 - item.importeGestion2,
 			porcentajeImporte:
-				((item.importeGestion1 - item.importeGestion2) / item.importeGestion2) *
-				100,
+				item.importeGestion2 === 0
+					? 0
+					: ((item.importeGestion1 - item.importeGestion2) /
+							item.importeGestion2) *
+					  100,
 		}))
 	}
 
@@ -93,12 +118,52 @@ export const useReportes = () => {
 
 		loading.value = true
 
-		generatePdfReport(json).then((response) => {
+		/* generatePdfReport(json).then((response) => {
 			loading.value = false
 			const url = window.URL.createObjectURL(new Blob([response]))
 			const link = document.createElement('a')
 			link.href = url
 			link.setAttribute('download', 'reporte.pdf')
+			document.body.appendChild(link)
+			link.click()
+		}) */
+
+		generatePdfReport(json).then((response) => {
+			loading.value = false
+			// Crear un objeto URL con el PDF
+			const url = window.URL.createObjectURL(
+				new Blob([response], { type: 'application/pdf' })
+			)
+			// Abrir el PDF en una nueva pestaña
+			const newWindow = window.open(url, '_blank')
+			if (newWindow) {
+				// Esperar a que la pestaña cargue y luego imprimir automáticamente
+				newWindow.onload = () => {
+					newWindow.print()
+				}
+			} else {
+				console.error(
+					'No se pudo abrir una nueva ventana. Verifica los permisos del navegador.'
+				)
+			}
+		})
+	}
+
+	const downloadReporteXls = (data, compare, search) => {
+		const json = {
+			search,
+			data,
+			compare,
+		}
+
+		loading.value = true
+
+		generateXlsReport(json).then((response) => {
+			loading.value = false
+			const url = window.URL.createObjectURL(new Blob([response]))
+			const link = document.createElement('a')
+			link.href = url
+			link.setAttribute('download', 'reporte.xls')
 			document.body.appendChild(link)
 			link.click()
 		})
@@ -109,5 +174,6 @@ export const useReportes = () => {
 		loading,
 		generarReporte,
 		downloadReporte,
+		downloadReporteXls,
 	}
 }

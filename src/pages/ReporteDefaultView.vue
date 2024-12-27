@@ -44,13 +44,6 @@
 						<small class="text-xs text-gray-500"
 							>Rango de fechas para comparación.
 						</small>
-						<Message
-							v-if="$form.gestionDos?.invalid"
-							severity="error"
-							size="small"
-							variant="simple"
-							>{{ $form.gestionDos.error?.message }}</Message
-						>
 					</div>
 					<div class="flex flex-col gap-1">
 						<label for="nombreCompleto" class="font-medium"
@@ -63,17 +56,11 @@
 							optionLabel="nombre"
 							optionValue="identificador"
 							placeholder="Seleccione un evento"
+							showClear
 						/>
 						<small class="text-xs text-gray-500"
 							>Si no selecciona un evento se tomarán todos los eventos.
 						</small>
-						<Message
-							v-if="$form.evento?.invalid"
-							severity="error"
-							size="small"
-							variant="simple"
-							>{{ $form.evento.error?.message }}</Message
-						>
 					</div>
 					<div class="flex flex-col gap-1">
 						<label for="nombreCompleto" class="font-medium"
@@ -82,27 +69,56 @@
 						<Select
 							name="segmento"
 							v-model="busqueda.segmento"
-							:options="
-								eventos.find((e) => e.identificador === busqueda.evento)
-									?.precios
-							"
-							optionLabel="tipo"
-							optionValue="tipo"
-							placeholder="Seleccione un evento"
-							:disabled="!busqueda.evento"
+							:options="tipoVisitantes"
+							optionLabel="nombre"
+							optionValue="nombre"
+							placeholder="Seleccione un segmento"
+							showClear
 						/>
 						<small class="text-xs text-gray-500"
 							>Si no se selecciona un segmento se mostrarán todos.
 						</small>
-						<Message
-							v-if="$form.segmento?.invalid"
-							severity="error"
-							size="small"
-							variant="simple"
-							>{{ $form.segmento.error?.message }}</Message
-						>
 					</div>
-					<Button type="submit" label="Buscar" icon="pi pi-search" outlined />
+					<div class="flex flex-col gap-1">
+						<label for="pais" class="font-medium">País</label>
+						<Select
+							name="pais"
+							v-model="busqueda.pais"
+							:options="countries"
+							optionLabel="country"
+							optionValue="country"
+							placeholder="Seleccione un país"
+							v-on:update:model-value="searchStates($event)"
+							showClear
+						/>
+						<small class="text-xs text-gray-500"
+							>Si no selecciona un país se tomarán todos los países.
+						</small>
+					</div>
+					<div class="flex flex-col gap-1">
+						<label for="estado" class="font-medium">Estado</label>
+						<Select
+							name="estado"
+							v-model="busqueda.estado"
+							:options="world.states"
+							optionLabel="name"
+							optionValue="name"
+							placeholder="Seleccione un estado"
+							showClear
+							:disabled="world.states.length === 0"
+							:loading="world.states.length === 0 && loadingStates"
+						/>
+						<small class="text-xs text-gray-500"
+							>Si no selecciona un estado se tomarán todos los estados.
+						</small>
+					</div>
+					<Button
+						type="submit"
+						label="Buscar"
+						icon="pi pi-search"
+						outlined
+						class="col-start-1"
+					/>
 					<Button
 						type="button"
 						label="Limpiar"
@@ -117,20 +133,34 @@
 		<div class="mb-5">
 			<Panel>
 				<template #icons>
-					<Button
-						icon="pi pi-file-pdf"
-						label="Exportar PDF"
-						size="small"
-						text
-						:disabled="filteredData.length === 0 || loading"
-						:loading="loading"
-						@click="exportarPDF"
-					/>
+					<div class="flex gap-2">
+						<Button
+							icon="pi pi-file-pdf"
+							label="Exportar PDF"
+							size="small"
+							text
+							:disabled="filteredData.length === 0 || loading"
+							:loading="loading"
+							@click="exportarPDF"
+							class="hover:bg-red-100 hover:text-red-900"
+						/>
+						<Button
+							icon="pi pi-file-excel"
+							label="Exportar XLS"
+							size="small"
+							text
+							:disabled="filteredData.length === 0 || loading"
+							:loading="loading"
+							@click="exportCSV"
+							class="hover:bg-green-100 hover:text-green-900"
+						/>
+					</div>
 				</template>
 				<DataTable
 					:value="filteredData"
 					tableStyle="min-width: 50rem;"
 					showGridlines
+					ref="dt"
 				>
 					<ColumnGroup type="header">
 						<Row>
@@ -167,7 +197,7 @@
 							</template>
 						</Column>
 						<Column field="diferenciaImporte" />
-						<Column>
+						<Column field="porcentajeImporte">
 							<template #body="{ data }">
 								{{ data.porcentajeImporte.toFixed(2) }}
 							</template>
@@ -191,24 +221,37 @@
 	</div>
 </template>
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { z } from 'zod'
 import { useEventos } from '@/composables/useEventos'
 import { useReportes } from '@/composables/useReportes'
+import { useTipoVisitantes } from '@/composables/useTipoVisitantes'
+import { useReservas } from '@/composables/useReservas'
+import countries from '@/assets/countries.json'
 
 const { eventos } = useEventos()
-const { filteredData, loading, generarReporte, downloadReporte } = useReportes()
+const {
+	filteredData,
+	loading,
+	generarReporte,
+	downloadReporte,
+	downloadReporteXls,
+} = useReportes()
+const { tipoVisitantes, fetchTipoVisitantes } = useTipoVisitantes()
+const { world, loadStates } = useReservas()
 
 const busqueda = ref({
 	gestionUno: [],
 	gestionDos: [],
 	evento: null,
 	segmento: null,
+	pais: null,
+	estado: null,
 })
 
 const compare = ref(false)
-
+const loadingStates = ref(false)
 const limpiar = () => {
 	busqueda.value = {
 		gestionUno: [],
@@ -264,4 +307,25 @@ const totalCantidadPeriodoDos = computed(() => {
 const totalImportePeriodoDos = computed(() => {
 	return filteredData.value.reduce((acc, item) => acc + item.importeGestion2, 0)
 })
+
+onMounted(() => {
+	fetchTipoVisitantes()
+})
+
+const dt = ref()
+const exportCSV = () => {
+	downloadReporteXls(filteredData.value, compare.value, busqueda.value)
+}
+
+const searchStates = async (pais) => {
+	if (!pais) {
+		world.value.states = []
+		busqueda.value.estado = null
+		return
+	}
+	loadingStates.value = true
+	const code = countries.find((c) => c.country === pais).code
+	await loadStates(code)
+	loadingStates.value = false
+}
 </script>
