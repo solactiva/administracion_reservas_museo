@@ -9,7 +9,7 @@
 		@click="actionCancelar"
 	/>
 	<Button
-		label="Guardar"
+		:label="`${dialogRef.data.update ? 'Actualizar' : 'Guardar'}`"
 		icon="pi pi-save"
 		class="text-sm justify-start"
 		text

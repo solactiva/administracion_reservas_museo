@@ -3,7 +3,7 @@
 		v-slot="$form"
 		:resolver="resolver"
 		:initialValues="visitante"
-		@submit="guardarVisitante"
+		@submit="seleccionarAccion"
 		class="flex flex-col gap-4"
 		id="form-visitante"
 		name="form-visitante"
@@ -52,14 +52,21 @@ const resolver = ref(
 	)
 )
 
-const guardarVisitante = async ({ valid }) => {
+const seleccionarAccion = ({ valid }) => {
 	if (!valid) return
-	console.log('Guardando visitante...')
-	console.log(visitante.value)
+	if (dialogRef.value.data.update) actualizarVisitante()
+	else guardarVisitante()
+}
 
+const guardarVisitante = async () => {
+	console.log('Guardando...')
 	await createTipoVisitante(visitante.value)
+	dialogRef.value.close()
+}
 
-	// Aquí se haría la petición al backend
+const actualizarVisitante = async () => {
+	console.log('Actualizando...')
+	await updateTipoVisitante(visitante.value)
 	dialogRef.value.close()
 }
 </script>

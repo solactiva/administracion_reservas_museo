@@ -17,7 +17,7 @@
 					icon="pi pi-refresh"
 					size="small"
 					rounded
-					v-tooltip="'Actualizar listado'"
+					v-tooltip.bottom="'Recargar'"
 					@click="fetchTipoVisitantes"
 				/>
 			</div>
@@ -56,16 +56,45 @@
 						</div>
 					</template>
 				</Column>
+				<Column header="">
+					<template #body="{ data }">
+						<div class="flex flex-row gap-1">
+							<Button
+								icon="pi pi-pencil"
+								text
+								rounded
+								size="small"
+								v-tooltip="'Editar'"
+								@click="actionActualizarTipoVisitante(data.identificador)"
+							/>
+							<Button
+								icon="pi pi-trash"
+								text
+								rounded
+								size="small"
+								v-tooltip="'Eliminar'"
+								severity="danger"
+								@click="actionEliminarTipoVisitante(data.identificador)"
+							/>
+						</div>
+					</template>
+				</Column>
 			</DataTable>
 		</template>
 	</Card>
 </template>
 <script setup>
-import { defineAsyncComponent, markRaw, onMounted } from 'vue'
+import { defineAsyncComponent, markRaw, onMounted, ref } from 'vue'
 import { useDialog } from 'primevue/usedialog'
 import { useTipoVisitantes } from '@/composables/useTipoVisitantes'
+import { useConfirm } from 'primevue/useconfirm'
 
-const { tipoVisitantes, fetchTipoVisitantes } = useTipoVisitantes()
+const {
+	tipoVisitantes,
+	visitante,
+	fetchTipoVisitantes,
+	eliminarTipoVisitante,
+} = useTipoVisitantes()
 
 const VisitanteForm = defineAsyncComponent(() =>
 	import('@/components/TipoVisitante/VisitanteForm.vue')
@@ -74,8 +103,41 @@ const VisitanteFooter = defineAsyncComponent(() =>
 	import('@/components/TipoVisitante/VisitanteFooter.vue')
 )
 
+const confirm = useConfirm()
 const dialog = useDialog()
+const update = ref(false)
+
+const actionActualizarTipoVisitante = (id) => {
+	update.value = true
+	visitante.value = tipoVisitantes.value.find((v) => v.identificador === id)
+	actionModalTipoVisitante()
+}
+
 const actionCrearTipoVisitante = () => {
+	update.value = false
+	visitante.value = {
+		identificador: crypto.randomUUID(),
+		nombre: '',
+		descripcion: '',
+	}
+	actionModalTipoVisitante()
+}
+
+const actionEliminarTipoVisitante = (id) => {
+	confirm.require({
+		group: 'danger',
+		header: 'Eliminar Tipo de Visitante',
+		message: '¿Está seguro de eliminar este tipo de visitante?',
+		icon: 'pi pi-exclamation-triangle',
+		acceptLabel: 'Sí',
+		accept: () => {
+			eliminarTipoVisitante(id)
+		},
+		reject: () => {},
+	})
+}
+
+const actionModalTipoVisitante = () => {
 	// eslint-disable-next-line no-unused-vars
 	const dialogRef = dialog.open(VisitanteForm, {
 		props: {
@@ -91,6 +153,9 @@ const actionCrearTipoVisitante = () => {
 		},
 		templates: {
 			footer: markRaw(VisitanteFooter),
+		},
+		data: {
+			update: update.value,
 		},
 	})
 }

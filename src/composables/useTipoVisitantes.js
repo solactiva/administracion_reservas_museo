@@ -3,16 +3,14 @@ import {
 	getTipoVisitantes,
 	postTipoVisitante,
 	putTipoVisitante,
+	deleteTipoVisitante,
 } from '@/services/tipoVisitanteService'
-import { ref } from 'vue'
+import { useTipoVisitanteStore } from '@/stores/tipoVisitanteStore'
+import { storeToRefs } from 'pinia'
 
 export const useTipoVisitantes = () => {
-	const tipoVisitantes = ref([])
-	const visitante = ref({
-		identificador: crypto.randomUUID(),
-		nombre: '',
-		descripcion: '',
-	})
+	const tipoVisitanteStore = useTipoVisitanteStore()
+	const { tipoVisitantes, visitante } = storeToRefs(tipoVisitanteStore)
 
 	const fetchTipoVisitantes = async () => {
 		const response = await getTipoVisitantes()
@@ -46,6 +44,15 @@ export const useTipoVisitantes = () => {
 		}
 	}
 
+	const eliminarTipoVisitante = async (id) => {
+		const response = await deleteTipoVisitante(id)
+		if (response.success) {
+			tipoVisitantes.value = tipoVisitantes.value.filter(
+				(t) => t.identificador !== id
+			)
+		}
+	}
+
 	return {
 		visitante,
 		tipoVisitantes,
@@ -53,5 +60,6 @@ export const useTipoVisitantes = () => {
 		fetchTipoVisitante,
 		createTipoVisitante,
 		updateTipoVisitante,
+		eliminarTipoVisitante,
 	}
 }
