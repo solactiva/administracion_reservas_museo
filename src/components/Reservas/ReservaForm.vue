@@ -78,13 +78,19 @@
 		<div class="flex flex-col gap-2">
 			<div class="card flex flex-col">
 				<label for="tipoReserva" class="text-sm">Tipo de reserva</label>
-				<SelectButton
-					id="tipoReserva"
-					v-model="reserva.tipoReserva"
-					:options="tiposDeReserva"
-					optionLabel="label"
-					optionValue="value"
-				/>
+				<div
+					v-for="tipoReserva in tiposDeReserva"
+					:key="tipoReserva.value"
+					class="flex flex-row mt-2 gap-2 items-center"
+				>
+					<RadioButton
+						v-model="reserva.tipoReserva"
+						:inputId="tipoReserva.value"
+						name="dynamic"
+						:value="tipoReserva.value"
+					/>
+					<label :for="tipoReserva.value">{{ tipoReserva.label }}</label>
+				</div>
 			</div>
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
 				<div class="flex flex-col">
