@@ -8,7 +8,6 @@
 					inline
 					v-model="fechaSeleccionada"
 					:disabled-days="evento?.diasNoActivo"
-					:minDate="new Date()"
 					@update:modelValue="actualizarHorarios"
 				/>
 			</div>
