@@ -50,13 +50,17 @@
 				</InputGroup>
 			</div>
 			<InputGroup v-for="(el, index) in eventoSelected.precios" :key="index">
-				<InputGroupAddon class="h-8 w-2/3">{{ el.tipo }}</InputGroupAddon>
-				<InputNumber v-model="el.precio" class="h-8 w-1/3" />
+				<InputGroupAddon class="h-8 w-1/3">{{ el.tipo }}</InputGroupAddon>
+				<InputNumber v-model="el.precio" class="h-8 w-1/4" />
+				<div class="flex items-center h-8 w-1/4 px-2">
+					<InputSwitch v-model="el.publico" />
+					<label class="ml-2 text-sm">Público</label>
+				</div>
 				<Button
 					icon="pi pi-trash"
 					severity="danger"
 					@click="eventoSelected.precios.splice(index, 1)"
-					class="h-8"
+					class="h-8 w-1/6"
 				/>
 			</InputGroup>
 		</div>
@@ -99,11 +103,15 @@ const semana = ref([
 const precio = ref({
 	tipo: '',
 	precio: 0,
+	publico: false,
 })
 
 const agregarPrecio = () => {
-	eventoSelected.value.precios.push({ ...precio.value })
-	precio.value = { tipo: '', precio: 0 }
+	eventoSelected.value.precios.push({ 
+		...precio.value,
+		publico: false
+	})
+	precio.value = { tipo: '', precio: 0, publico: false }
 }
 
 onMounted(() => {

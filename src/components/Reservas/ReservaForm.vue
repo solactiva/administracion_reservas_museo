@@ -236,6 +236,14 @@
 					/>
 				</InputGroup>
 			</div>
+			<div>
+				<label for="descripcion" class="text-sm">Descripción</label>
+				<InputText
+					v-model="reserva.descripcion"
+					id="descripcion"
+					class="w-full"
+				/>
+			</div>
 		</div>
 	</div>
 </template>
