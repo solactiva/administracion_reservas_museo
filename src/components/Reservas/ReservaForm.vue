@@ -275,6 +275,7 @@ const numero = ref(null)
 const paymethod = ref([
 	{ name: 'Efectivo', value: 'efectivo' },
 	{ name: 'QR', value: 'qr' },
+	{ name: 'Tarjeta', value: 'tarjeta' },
 ])
 const tiposDeReserva = ref([
 	{ label: '🏢 En persona', value: 'onsite' },
