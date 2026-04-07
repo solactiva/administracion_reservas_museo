@@ -157,5 +157,6 @@ const tiposDeReserva = ref([
 const metodosPago = ref([
 	{ name: 'Efectivo', value: 'efectivo' },
 	{ name: 'QR', value: 'qr' },
+	{ name: 'Tarjeta', value: 'tarjeta' },
 ])
 </script>
